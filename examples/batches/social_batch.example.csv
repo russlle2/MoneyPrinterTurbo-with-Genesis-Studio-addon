@@ -1,0 +1,5 @@
+idea,job_id,template,platform,brand,media_path,music_path,export_enabled,narration_enabled,render_enabled
+Solar lighter follow-up — girlfriend demo that went viral,solar-lighter-batch-001,affiliate_product,tiktok,bold_viral,./clips/solar-product,assets/music/light_energy.mp3,true,true,true
+Sound bowl meditation for beginners — 3 breathing techniques,wellness-bowl-batch-001,wellness_teaching,instagram_reels,wellness_soft,./clips/wellness,,false,true,true
+Community fundraiser — help us reach our goal this month,fundraising-batch-001,fundraising_story,tiktok,clean_creator,./clips/fundraising,assets/music/gentle_emotional.mp3,true,true,true
+How to set up a home studio in 5 steps,tutorial-batch-001,tutorial,youtube_shorts,minimal_white,./clips/tutorial,,false,true,true

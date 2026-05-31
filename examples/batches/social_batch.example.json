@@ -1,0 +1,45 @@
+[
+  {
+    "idea": "Solar lighter follow-up — girlfriend demo that went viral",
+    "job_id": "solar-lighter-batch-001",
+    "template": "affiliate_product",
+    "platform": "tiktok",
+    "brand": "bold_viral",
+    "media_path": "./clips/solar-product",
+    "music_path": "assets/music/light_energy.mp3",
+    "export_enabled": true,
+    "narration_enabled": true,
+    "render_enabled": true
+  },
+  {
+    "idea": "Sound bowl meditation for beginners — 3 breathing techniques",
+    "job_id": "wellness-bowl-batch-001",
+    "template": "wellness_teaching",
+    "platform": "instagram_reels",
+    "brand": "wellness_soft",
+    "media_path": "./clips/wellness",
+    "music_path": "",
+    "export_enabled": false,
+    "narration_enabled": true,
+    "render_enabled": true
+  },
+  {
+    "idea": "Community fundraiser — help us reach our goal this month",
+    "job_id": "fundraising-batch-001",
+    "template": "fundraising_story",
+    "platform": "tiktok",
+    "brand": "clean_creator",
+    "media_path": "./clips/fundraising",
+    "music_path": "assets/music/gentle_emotional.mp3",
+    "export_enabled": true
+  },
+  {
+    "idea": "How to set up a home studio in 5 steps",
+    "job_id": "tutorial-batch-001",
+    "template": "tutorial",
+    "platform": "youtube_shorts",
+    "brand": "minimal_white",
+    "media_path": "./clips/tutorial",
+    "export_enabled": false
+  }
+]
