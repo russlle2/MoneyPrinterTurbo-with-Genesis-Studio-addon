@@ -66,6 +66,8 @@ def cmd_create(args: argparse.Namespace) -> int:
             "manual_visuals_path": getattr(args, "manual_visuals_path", "") or "",
             "quality_check": getattr(args, "quality_check", False),
             "strict_quality_check": getattr(args, "strict_quality_check", False),
+            "select_thumbnail": getattr(args, "select_thumbnail", False),
+            "thumbnail_path": getattr(args, "thumbnail_path", "") or "",
         },
         content_format=getattr(args, "content_format", "") or "",
         audience=getattr(args, "audience", "") or "",
@@ -247,6 +249,8 @@ def build_parser() -> argparse.ArgumentParser:
     cr.add_argument("--manual-visuals-path", dest="manual_visuals_path", default="")
     cr.add_argument("--quality-check", dest="quality_check", action="store_true")
     cr.add_argument("--strict-quality-check", dest="strict_quality_check", action="store_true")
+    cr.add_argument("--select-thumbnail", dest="select_thumbnail", action="store_true")
+    cr.add_argument("--thumbnail-path", dest="thumbnail_path", default="")
 
     sub.add_parser("templates", help="List available templates")
 
@@ -266,6 +270,10 @@ def build_parser() -> argparse.ArgumentParser:
     rr.add_argument("--visual-provider", dest="visual_provider", default="prompt_card_only")
     rr.add_argument("--import-visuals", dest="import_visuals", action="store_true")
     rr.add_argument("--manual-visuals-path", dest="manual_visuals_path", default="")
+    rr.add_argument("--quality-check", dest="quality_check", action="store_true")
+    rr.add_argument("--strict-quality-check", dest="strict_quality_check", action="store_true")
+    rr.add_argument("--select-thumbnail", dest="select_thumbnail", action="store_true")
+    rr.add_argument("--thumbnail-path", dest="thumbnail_path", default="")
 
     st = sub.add_parser("status", help="Show run status")
     st.add_argument("job_id")

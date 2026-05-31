@@ -136,14 +136,24 @@ def generate_thumbnail_for_run(
     run_dir: Path,
     thumb_dir: Path | None = None,
     force: bool = False,
+    preferred_source: Path | None = None,
 ) -> Path:
     """
     Return thumbnail path for a run.
-    Uses existing file unless force=True; extracts from video or builds placeholder.
+    Uses existing file unless force=True; prefers preferred_source (e.g. selected_thumbnail.jpg).
     """
     thumb_dir = thumb_dir or _DEFAULT_THUMB_DIR
     thumb_dir.mkdir(parents=True, exist_ok=True)
     out_path = thumb_dir / safe_thumbnail_filename(job_id)
+
+    if preferred_source and preferred_source.is_file() and preferred_source.stat().st_size > 0:
+        try:
+            import shutil
+            shutil.copy2(preferred_source, out_path)
+            _resize_jpeg(out_path)
+            return out_path
+        except Exception:  # noqa: BLE001
+            pass
 
     if not force:
         existing = find_existing_thumbnail(job_id, thumb_dir=thumb_dir)

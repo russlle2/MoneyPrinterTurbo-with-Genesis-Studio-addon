@@ -40,6 +40,8 @@ class DashboardRunCard:
     readiness_label: str = ""
     quality_score: int = 0
     quality_badge: str = ""
+    selected_thumbnail_path: str = ""
+    has_selected_thumbnail: bool = False
     warnings: list[str] = field(default_factory=list)
     suggested_commands: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -72,6 +74,8 @@ class DashboardRunCard:
             "readiness_label": self.readiness_label,
             "quality_score": self.quality_score,
             "quality_badge": self.quality_badge,
+            "selected_thumbnail_path": self.selected_thumbnail_path,
+            "has_selected_thumbnail": self.has_selected_thumbnail,
             "warnings": self.warnings,
             "suggested_commands": self.suggested_commands,
             "notes": self.notes,

@@ -3,6 +3,7 @@ Genesis Studio — Dashboard CLI.
 
 Usage:
     python -m genesis.dashboard.dashboard_cli build
+    python -m genesis.dashboard.dashboard_cli open
     python -m genesis.dashboard.dashboard_cli open-path
     python -m genesis.dashboard.dashboard_cli summary
     python -m genesis.dashboard.dashboard_cli thumbnails
@@ -54,6 +55,45 @@ def cmd_build(args: argparse.Namespace) -> int:
         for w in result.warnings[:5]:
             _print(f"    ! {w}")
     return 0 if result.status != "failed" else 1
+
+
+def cmd_open(args: argparse.Namespace) -> int:
+    """Build dashboard (if needed) and open in default browser."""
+    import webbrowser
+
+    dashboard_dir = Path(args.dashboard_dir) if getattr(args, "dashboard_dir", "") else _DASHBOARD_DIR
+    html_path = dashboard_dir / "index.html"
+
+    # Build if missing or stale (older than 10 min or missing)
+    needs_build = not html_path.is_file()
+    if html_path.is_file():
+        import time
+        age_sec = time.time() - html_path.stat().st_mtime
+        if age_sec > 600:
+            needs_build = True
+
+    if needs_build:
+        runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else None
+        index_path = Path(args.index_path) if getattr(args, "index_path", "") else None
+        build_dashboard(
+            runs_base=runs_base,
+            index_path=index_path,
+            dashboard_dir=dashboard_dir,
+        )
+
+    file_url = html_path.resolve().as_uri()
+    opened = False
+    try:
+        opened = webbrowser.open(file_url)
+    except Exception:  # noqa: BLE001
+        opened = False
+
+    if opened:
+        _print(f"Dashboard opened: {file_url}")
+    else:
+        _print("Could not open browser automatically.")
+        _print(f"Manually open: {file_url}")
+    return 0
 
 
 def cmd_open_path(args: argparse.Namespace) -> int:
@@ -132,6 +172,7 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--no-refresh-index", action="store_true")
     b.add_argument("--no-thumbnails", action="store_true")
 
+    sub.add_parser("open", help="Build dashboard and open in default browser")
     sub.add_parser("open-path", help="Print dashboard index.html path")
 
     s = sub.add_parser("summary", help="Print summary counts")
@@ -147,6 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     handlers = {
         "build": cmd_build,
+        "open": cmd_open,
         "open-path": cmd_open_path,
         "summary": cmd_summary,
         "thumbnails": cmd_thumbnails,

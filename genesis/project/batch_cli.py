@@ -159,6 +159,7 @@ def cmd_batch_export(args: argparse.Namespace) -> int:
 
 
 def cmd_dashboard(args: argparse.Namespace) -> int:
+    import webbrowser
     from genesis.dashboard.dashboard_builder import build_dashboard
 
     runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else None
@@ -167,7 +168,24 @@ def cmd_dashboard(args: argparse.Namespace) -> int:
     _header("Dashboard built")
     _print(f"  Open:  {result.output_path}")
     _print(f"  Runs:  {len(result.cards)}")
-    _print("  Or run: python -m genesis.dashboard.dashboard_cli open-path")
+
+    if getattr(args, "open", False):
+        html_path = Path(result.output_path)
+        if html_path.is_file():
+            file_url = html_path.resolve().as_uri()
+            opened = False
+            try:
+                opened = webbrowser.open(file_url)
+            except Exception:  # noqa: BLE001
+                opened = False
+            if opened:
+                _print(f"  Browser opened: {file_url}")
+            else:
+                _print(f"  Could not open browser. Manually open: {file_url}")
+        else:
+            _print(f"  Dashboard HTML not found at {result.output_path}")
+    else:
+        _print("  To open in browser: python -m genesis.dashboard.dashboard_cli open")
     return 0
 
 
@@ -223,7 +241,8 @@ def build_parser() -> argparse.ArgumentParser:
     bs = sub.add_parser("batch-status", help="Show batch summary")
     bs.add_argument("batch_id")
 
-    sub.add_parser("dashboard", help="Build local review dashboard (alias)")
+    db = sub.add_parser("dashboard", help="Build local review dashboard (alias)")
+    db.add_argument("--open", action="store_true", help="Open in default browser after building")
 
     return p
 

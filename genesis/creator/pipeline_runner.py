@@ -382,6 +382,44 @@ def run_creator_pipeline(
         notes=[f"template={req.template}", f"brand={req.brand_preset}"],
     )
 
+    # ─── Thumbnail selection step ─────────────────────────────────────────────
+    if req.options.get("select_thumbnail") or req.options.get("thumbnail_path"):
+        try:
+            from genesis.thumbnail.thumbnail_selector import run_thumbnail_selection
+            from genesis.thumbnail.thumbnail_export import (
+                write_thumbnail_selection_json,
+                write_thumbnail_selection_md,
+            )
+
+            manual_path = req.options.get("thumbnail_path") or None
+            thumb_result = run_thumbnail_selection(
+                job_id,
+                runs_base=runs_base,
+                extract_frames=True,
+                manual_path=manual_path,
+            )
+            write_thumbnail_selection_json(run_dir, thumb_result)
+            write_thumbnail_selection_md(run_dir, thumb_result)
+            steps.append(CreatorRunStep(
+                step_name="thumbnail_selection",
+                status=thumb_result.status,
+                completed_at=_now(),
+                output_paths=[thumb_result.selected_thumbnail_path] if thumb_result.selected_thumbnail_path else [],
+                warnings=thumb_result.warnings[:3],
+                notes=thumb_result.notes,
+            ))
+            if thumb_result.warnings:
+                all_warnings.extend(thumb_result.warnings[:2])
+            if req.export_enabled and thumb_result.selected_thumbnail_path:
+                from genesis.thumbnail.thumbnail_export import copy_thumbnail_to_export_package
+                if export_dir and Path(export_dir).is_dir():
+                    copy_thumbnail_to_export_package(
+                        Path(thumb_result.selected_thumbnail_path), Path(export_dir),
+                    )
+        except Exception as exc:  # noqa: BLE001
+            steps.append(_step("thumbnail_selection", CreatorStatus.PARTIAL, warnings=[str(exc)]))
+            all_warnings.append(f"thumbnail selection: {exc}")
+
     quality_info: dict | None = None
     if req.options.get("quality_check") or req.options.get("strict_quality_check"):
         try:

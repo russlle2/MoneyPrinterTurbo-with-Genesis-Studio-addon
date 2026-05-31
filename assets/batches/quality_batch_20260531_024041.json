@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-05-31T02:40:41.786001+00:00",
+  "platform": "tiktok",
+  "strict_mode": false,
+  "runs": [
+    {
+      "job_id": "a",
+      "readiness_label": "READY_TO_POST",
+      "score": 96,
+      "blockers": 0
+    },
+    {
+      "job_id": "b",
+      "readiness_label": "READY_TO_POST",
+      "score": 96,
+      "blockers": 0
+    }
+  ]
+}

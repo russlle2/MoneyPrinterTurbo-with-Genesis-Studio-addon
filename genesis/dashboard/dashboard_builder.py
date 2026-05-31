@@ -236,9 +236,14 @@ def build_run_card(
     if not review and (run_dir / "review.html").is_file():
         review = str(run_dir / "review.html")
 
+    # Prefer selected_thumbnail.jpg if it exists in the run folder
+    selected_thumb = run_dir / "selected_thumbnail.jpg"
+    has_selected_thumbnail = selected_thumb.is_file() and selected_thumb.stat().st_size > 0
+
     if generate_thumbs:
         thumb_abs = generate_thumbnail_for_run(
             record.job_id, run_dir=run_dir, thumb_dir=thumb_dir,
+            preferred_source=selected_thumb if has_selected_thumbnail else None,
         )
     else:
         thumb_abs = thumb_dir / safe_thumbnail_filename(record.job_id)
@@ -285,6 +290,8 @@ def build_run_card(
         readiness_label=quality.get("readiness_label", ""),
         quality_score=quality.get("quality_score", 0),
         quality_badge=quality.get("quality_badge", ""),
+        selected_thumbnail_path=_rel_link(dashboard_dir, selected_thumb) if has_selected_thumbnail else "",
+        has_selected_thumbnail=has_selected_thumbnail,
         warnings=warnings[:8],
         notes=[],
     )
@@ -306,6 +313,11 @@ def build_run_card(
         0,
         f"python -m genesis.quality.quality_cli check {card.job_id} --platform {plat}",
     )
+    if not card.has_selected_thumbnail:
+        card.suggested_commands.insert(
+            0,
+            f"python -m genesis.thumbnail.thumbnail_cli select {card.job_id}",
+        )
     return card
 
 
@@ -413,8 +425,18 @@ def write_dashboard_html(
             if card.review_html_path else ""
         )
         export_link = (
-            f'<span class="path">{_e(card.export_dir)}</span>'
+            f'<a href="{_e(card.export_dir)}">export folder</a>'
             if card.has_export else "<em>not exported</em>"
+        )
+        thumb_status = (
+            f'<span class="badge ok">thumbnail ready</span>'
+            if card.has_selected_thumbnail
+            else f'<span class="badge warn">no thumbnail</span>'
+        )
+        selected_thumb_link = (
+            f' · <a href="{_e(card.selected_thumbnail_path)}">thumbnail</a>'
+            if card.has_selected_thumbnail and card.selected_thumbnail_path
+            else ""
         )
 
         cards_html.append(f"""
@@ -428,12 +450,13 @@ def write_dashboard_html(
       <span class="badge">{_e(card.template or "—")}</span>
       <span class="badge">{_e(card.primary_platform or "—")}</span>
       {ph_line}
+      {thumb_status}
     </div>
     <p class="detail">Media: {media_line} · Audio mix: {"yes" if card.has_audio_mix else "no"}</p>
-    <p class="detail">Transitions: {trans_line or "—"}</p>
-    <p class="links">{video_link} · {review_link} · Export: {export_link}</p>
+    <p class="detail">Readiness: {trans_line or "—"}</p>
+    <p class="links">{video_link} · {review_link} · {export_link}{selected_thumb_link}</p>
     <div class="warns">{warn_badges}</div>
-    <details><summary>Commands</summary><pre class="cmds">{cmds}</pre></details>
+    <details><summary>Suggested commands</summary><pre class="cmds">{cmds}</pre></details>
   </div>
 </article>""")
 
@@ -448,46 +471,73 @@ def write_dashboard_html(
 * {{ box-sizing: border-box; }}
 body {{ font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #0f1117; color: #e8e8ed; }}
 header {{ margin-bottom: 24px; }}
-h1 {{ margin: 0 0 8px; font-size: 1.5rem; }}
-.stats {{ display: flex; flex-wrap: wrap; gap: 8px; }}
+h1 {{ margin: 0 0 4px; font-size: 1.6rem; letter-spacing: -0.5px; }}
+.subtitle {{ margin: 0 0 12px; font-size: 0.85rem; color: #6b7280; }}
+.stats {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }}
 .stat {{ background: #1a1d27; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; }}
+.stat.ready {{ border-left: 3px solid #22c55e; }}
+.stat.warn {{ border-left: 3px solid #f59e0b; }}
 .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }}
 .card {{ background: #1a1d27; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }}
 .thumb {{ width: 100%; height: 180px; object-fit: cover; background: #252830; }}
 .body {{ padding: 12px 14px; flex: 1; }}
 .card h3 {{ margin: 0 0 6px; font-size: 1rem; word-break: break-all; }}
 .idea {{ margin: 0 0 8px; font-size: 0.85rem; color: #a8a8b8; }}
-.meta {{ display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }}
-.badge {{ font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: #333; color: #fff; }}
-.badge.warn {{ background: #b45309; }}
+.meta {{ display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }}
+.badge {{ font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; background: #2a2d3a; color: #d1d5db; }}
+.badge.warn {{ background: #92400e; color: #fde68a; }}
+.badge.ok {{ background: #14532d; color: #86efac; }}
+.badge.fail {{ background: #7f1d1d; color: #fca5a5; }}
 .badge.status {{ font-weight: 600; }}
 .detail, .links {{ font-size: 0.8rem; margin: 4px 0; color: #9ca3af; }}
+.links a {{ color: #60a5fa; text-decoration: none; }}
+.links a:hover {{ text-decoration: underline; }}
 .path {{ word-break: break-all; }}
-.warns {{ margin-top: 6px; }}
-a {{ color: #60a5fa; }}
-pre.cmds {{ font-size: 0.72rem; white-space: pre-wrap; background: #0f1117; padding: 8px; border-radius: 6px; }}
-details summary {{ cursor: pointer; font-size: 0.85rem; color: #94a3b8; }}
-footer {{ margin-top: 32px; font-size: 0.8rem; color: #6b7280; }}
+.warns {{ margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }}
+pre.cmds {{ font-size: 0.7rem; white-space: pre-wrap; background: #0a0c12; padding: 8px; border-radius: 6px; margin: 0; }}
+details summary {{ cursor: pointer; font-size: 0.82rem; color: #94a3b8; padding: 6px 0; }}
+details[open] summary {{ color: #e2e8f0; }}
+.workflow {{ background: #1a1d27; border-radius: 12px; padding: 20px 24px; margin-top: 32px; }}
+.workflow h2 {{ margin: 0 0 16px; font-size: 1.1rem; color: #f1f5f9; }}
+.workflow ol {{ margin: 0; padding-left: 20px; }}
+.workflow li {{ margin-bottom: 10px; font-size: 0.87rem; color: #cbd5e1; }}
+.workflow code {{ background: #0a0c12; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; color: #7dd3fc; }}
+footer {{ margin-top: 32px; font-size: 0.78rem; color: #4b5563; border-top: 1px solid #1f2937; padding-top: 16px; }}
 </style>
 </head>
 <body>
 <header>
   <h1>Genesis Studio Dashboard</h1>
-  <p>Generated {_e(summary.generated_at)}</p>
+  <p class="subtitle">Local static interface — generated {_e(summary.generated_at)}</p>
   <div class="stats">
-    <span class="stat">Total: {summary.total_runs}</span>
-    <span class="stat">Complete: {summary.complete_runs}</span>
-    <span class="stat">Partial: {summary.partial_runs}</span>
+    <span class="stat">Total runs: {summary.total_runs}</span>
+    <span class="stat ready">Complete: {summary.complete_runs}</span>
+    <span class="stat warn">Partial: {summary.partial_runs}</span>
     <span class="stat">Failed: {summary.failed_runs}</span>
     <span class="stat">Missing video: {summary.missing_video_runs}</span>
-    <span class="stat">Ready to export: {summary.ready_to_export_runs}</span>
-    <span class="stat">With placeholders: {summary.runs_with_placeholders}</span>
+    <span class="stat ready">Ready to export: {summary.ready_to_export_runs}</span>
+    <span class="stat warn">With placeholders: {summary.runs_with_placeholders}</span>
   </div>
 </header>
 <main class="grid">
 {body}
 </main>
-<footer>Local static dashboard — no external assets. Open file:///…/assets/dashboard/index.html</footer>
+<section class="workflow">
+  <h2>Daily Workflow</h2>
+  <ol>
+    <li>Create a video:<br><code>python -m genesis.creator.creator_cli create "your idea" --template affiliate_product --platform tiktok --select-thumbnail --quality-check --export</code></li>
+    <li>Check quality:<br><code>python -m genesis.quality.quality_cli strict-check &lt;job_id&gt; --platform tiktok</code></li>
+    <li>Select thumbnail:<br><code>python -m genesis.thumbnail.thumbnail_cli select &lt;job_id&gt;</code></li>
+    <li>Review the run:<br><code>python -m genesis.review.review_cli show &lt;job_id&gt;</code></li>
+    <li>Export for posting:<br><code>python -m genesis.project.batch_cli batch-export &lt;job_id&gt; --platform tiktok</code></li>
+    <li>Rebuild &amp; open this dashboard:<br><code>python -m genesis.dashboard.dashboard_cli build &amp;&amp; python -m genesis.dashboard.dashboard_cli open</code></li>
+  </ol>
+</section>
+<footer>
+  Genesis Studio — local static dashboard. No external assets, no server, no cloud.
+  To open: <code>python -m genesis.dashboard.dashboard_cli open</code>
+  &nbsp;|&nbsp; Path: <code>assets/dashboard/index.html</code>
+</footer>
 </body>
 </html>"""
 

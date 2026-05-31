@@ -97,6 +97,18 @@ def cmd_show(args: argparse.Namespace) -> int:
     _print(f"  Draft video:   {'yes — ' + rs.draft_video_path if rs.has_draft_video else 'no'}")
 
     run_dir = Path(rs.run_dir) if rs.run_dir else None
+    if run_dir:
+        selected_thumb = run_dir / "selected_thumbnail.jpg"
+        if selected_thumb.is_file():
+            _print(f"  Thumbnail:     {selected_thumb}")
+        else:
+            for name in ("thumbnail.jpg", "thumbnail.png"):
+                if (run_dir / name).is_file():
+                    _print(f"  Thumbnail:     {run_dir / name} (not yet selected)")
+                    break
+            else:
+                _print("  Thumbnail:     not found — run: python -m genesis.thumbnail.thumbnail_cli select " + args.job_id)
+
     if run_dir and (run_dir / "ready_to_post_report.json").is_file():
         try:
             q = json.loads((run_dir / "ready_to_post_report.json").read_text(encoding="utf-8"))

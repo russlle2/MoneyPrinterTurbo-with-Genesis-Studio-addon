@@ -227,6 +227,39 @@ def run_core_file_checks(ins: RunInspection) -> list[QualityCheckResult]:
                 recommended_fix="Run review export or creator --export",
             ))
 
+    # Thumbnail check
+    thumb_ok = (
+        ins.exists("selected_thumbnail.jpg")
+        or ins.exists("thumbnail.jpg")
+        or ins.exists("thumbnail.png")
+    )
+    if thumb_ok:
+        thumb_name = (
+            "selected_thumbnail.jpg" if ins.exists("selected_thumbnail.jpg")
+            else "thumbnail.jpg" if ins.exists("thumbnail.jpg")
+            else "thumbnail.png"
+        )
+        results.append(_result(
+            "core_thumbnail", "Thumbnail present", "core",
+            message=thumb_name,
+            evidence_paths=[thumb_name],
+        ))
+    elif cfg.require_thumbnail:
+        severity = CheckSeverity.HIGH if cfg.strict_mode else CheckSeverity.MEDIUM
+        results.append(_result(
+            "core_thumbnail", "Thumbnail present", "core",
+            status=CheckStatus.FAIL, severity=severity, score_impact=15,
+            message="selected_thumbnail.jpg missing",
+            recommended_fix="Run: python -m genesis.thumbnail.thumbnail_cli select <job_id>",
+        ))
+    else:
+        results.append(_result(
+            "core_thumbnail", "Thumbnail present", "core",
+            status=CheckStatus.WARN, severity=CheckSeverity.LOW, score_impact=3,
+            message="no thumbnail found (recommended)",
+            recommended_fix="Run: python -m genesis.thumbnail.thumbnail_cli select <job_id>",
+        ))
+
     return results
 
 
