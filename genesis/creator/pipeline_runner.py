@@ -276,6 +276,34 @@ def run_creator_pipeline(
     steps.append(trim)
     all_warnings.extend(trim.warnings)
 
+    # Step 3b: optional AI visual fill
+    if req.options.get("ai_visual_fill"):
+        try:
+            from genesis.ai_visuals.visual_fill import run_visual_fill_for_run
+            vf = run_visual_fill_for_run(
+                job_id,
+                runs_base=runs_base,
+                repo_root=repo_root,
+                provider_mode=str(req.options.get("visual_provider", "prompt_card_only")),
+                asset_type=str(req.options.get("visual_asset_type", "")) or None,
+                brand_preset=req.brand_preset,
+                content_format=req.content_format,
+                platform=req.primary_platform,
+            )
+            vf_step = CreatorRunStep(
+                step_name="ai_visual_fill",
+                status=vf.status,
+                completed_at=_now(),
+                output_paths=[vf.manifest_path] if vf.manifest_path else [],
+                warnings=vf.warnings[:5],
+                notes=[f"missing={len(vf.missing_scenes)}", f"assets={len(vf.generated_assets)}"],
+            )
+            steps.append(vf_step)
+            all_warnings.extend(vf.warnings)
+        except Exception as exc:  # noqa: BLE001
+            steps.append(_step("ai_visual_fill", CreatorStatus.PARTIAL, warnings=[str(exc)]))
+            all_warnings.append(f"ai visual fill: {exc}")
+
     # Step 4: render
     # Update job_id in req to ensure it matches the actual run
     req.job_id = job_id

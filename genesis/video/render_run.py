@@ -122,6 +122,7 @@ def render_run_video(
 
     # Prefer media_manifest.json scene assignments when available
     manifest_matches: dict[str, str] | None = None
+    generated_matches: dict[str, str] | None = None
     media_manifest_path = run_dir / "media_manifest.json"
     if media_manifest_path.is_file():
         try:
@@ -137,6 +138,17 @@ def render_run_video(
         except Exception:  # noqa: BLE001
             manifest_matches = None
 
+    try:
+        from genesis.ai_visuals.generated_asset_manifest import load_generated_scene_assignments
+        generated_matches = load_generated_scene_assignments(run_dir, repo_root=_REPO_ROOT)
+        if generated_matches:
+            logger.info(
+                "render_run_video job=%s using generated visuals (%d scenes)",
+                job_id, len(generated_matches),
+            )
+    except Exception:  # noqa: BLE001
+        generated_matches = None
+
     timeline = build_video_timeline(
         job_id=job_id,
         storyboard=storyboard,
@@ -148,6 +160,7 @@ def render_run_video(
         repo_root=_REPO_ROOT,
         target_platform=target_platform,
         manifest_matches=manifest_matches,
+        generated_matches=generated_matches,
     )
 
     trim_notes: list[str] = []

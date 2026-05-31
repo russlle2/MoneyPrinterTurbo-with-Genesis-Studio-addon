@@ -66,6 +66,18 @@ DEFAULT_GENESIS_SETTINGS: dict[str, Any] = {
     "output_base_dir": "assets",
 }
 
+DEFAULT_AI_VISUALS: dict[str, Any] = {
+    "enabled": False,
+    "provider_mode": "prompt_card_only",
+    "default_asset_type": "image",
+    "aspect_ratio": "9:16",
+    "duration_seconds": 4,
+    "allow_local_comfyui": False,
+    "allow_external_paid": False,
+    "output_dir": "generated_visuals",
+    "debug_prompts": False,
+}
+
 _ENV_MAP_ELEVENLABS = {
     "GENESIS_ELEVENLABS_API_KEY": "api_key",
     "GENESIS_ELEVENLABS_VOICE_ID": "voice_id",
@@ -102,6 +114,15 @@ _ENV_MAP_SETTINGS = {
     "GENESIS_COMFYUI_URL": "comfyui_url",
     "GENESIS_DEFAULT_MODE": "default_mode",
     "GENESIS_OUTPUT_BASE_DIR": "output_base_dir",
+}
+
+_ENV_MAP_AI_VISUALS = {
+    "GENESIS_AI_VISUALS_ENABLED": "enabled",
+    "GENESIS_AI_VISUALS_PROVIDER_MODE": "provider_mode",
+    "GENESIS_AI_VISUALS_DEFAULT_ASSET_TYPE": "default_asset_type",
+    "GENESIS_AI_VISUALS_ALLOW_LOCAL_COMFYUI": "allow_local_comfyui",
+    "GENESIS_AI_VISUALS_ALLOW_EXTERNAL_PAID": "allow_external_paid",
+    "GENESIS_AI_VISUALS_DEBUG_PROMPTS": "debug_prompts",
 }
 
 
@@ -251,6 +272,17 @@ def load_genesis_settings(config_root: Path | str | None = None) -> dict[str, An
         env_map=_ENV_MAP_SETTINGS,
         config_root=config_root,
         coerce_bools={"enabled"},
+    )
+
+
+def load_ai_visuals_config(config_root: Path | str | None = None) -> dict[str, Any]:
+    return load_merged_config(
+        name="ai_visuals",
+        defaults=DEFAULT_AI_VISUALS,
+        local_filename="ai_visuals.json",
+        env_map=_ENV_MAP_AI_VISUALS,
+        config_root=config_root,
+        coerce_bools={"enabled", "allow_local_comfyui", "allow_external_paid", "debug_prompts"},
     )
 
 

@@ -45,6 +45,8 @@ def build_export_manifest(
         "mixed_audio.mp3",
         "transition_plan.json",
         "beat_timing.json",
+        "generated_visuals_manifest.json",
+        "ai_visual_fill_report.md",
         "render_notes.md",
         "export_manifest.json",
         "draft_video.mp4",
@@ -80,6 +82,10 @@ def build_export_manifest(
         "mixed_audio_path": "mixed_audio.mp3" if (run_dir / "mixed_audio.mp3").exists() else "",
         "transition_plan_path": "transition_plan.json" if (run_dir / "transition_plan.json").exists() else "",
         "beat_timing_path": "beat_timing.json" if (run_dir / "beat_timing.json").exists() else "",
+        "generated_visuals_manifest_path": (
+            "generated_visuals_manifest.json"
+            if (run_dir / "generated_visuals_manifest.json").exists() else ""
+        ),
         "render_style_summary": {
             "brand_preset": render_style.get("brand_preset", brand_preset),
             "features": render_style.get("features", {}),

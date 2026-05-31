@@ -73,7 +73,7 @@ def find_run_media_assets(
     assets: list[MediaAsset] = []
     seen: set[str] = set()
 
-    search_dirs = [run_dir / "media", run_dir]
+    search_dirs = [run_dir / "media", run_dir / "generated_visuals", run_dir]
     for folder in search_dirs:
         if not folder.is_dir():
             continue
@@ -102,20 +102,23 @@ def match_assets_to_scenes(
     assets: list[MediaAsset],
     *,
     manifest_matches: dict[str, str] | None = None,
+    generated_matches: dict[str, str] | None = None,
 ) -> dict[str, MediaAsset]:
     """Map scene_id → best visual asset (video/image only).
 
-    If manifest_matches is provided (scene_id → stored_path from media_manifest),
-    those assignments take priority over filename-hint matching.
+    Priority:
+      1. manifest_matches (real ingested media)
+      2. generated_matches (AI/generated assets for missing scenes)
+      3. filename hints / positional fallback
     """
     visual = [a for a in assets if a.media_type in ("video", "image")]
     by_scene: dict[str, MediaAsset] = {}
 
-    # 1. Prefer manifest-based scene matches when available
-    if manifest_matches:
+    def _assign_from_paths(mapping: dict[str, str]) -> None:
         path_index = {a.path: a for a in visual}
-        for sid, stored_path in manifest_matches.items():
-            # stored_path may be relative repo path; match by basename or full path
+        for sid, stored_path in mapping.items():
+            if sid in by_scene:
+                continue
             from pathlib import Path as _Path
             basename = _Path(stored_path).name
             hit = path_index.get(stored_path)
@@ -124,7 +127,15 @@ def match_assets_to_scenes(
             if hit:
                 by_scene[sid] = hit
 
-    # 2. Filename scene-hint fallback
+    # 1. Real matched media from media_manifest
+    if manifest_matches:
+        _assign_from_paths(manifest_matches)
+
+    # 2. Generated visuals for gaps only
+    if generated_matches:
+        _assign_from_paths(generated_matches)
+
+    # 3. Filename scene-hint fallback
     for asset in visual:
         if asset.scene_hint:
             by_scene.setdefault(asset.scene_hint, asset)

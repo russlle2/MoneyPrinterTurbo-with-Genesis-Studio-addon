@@ -58,6 +58,11 @@ def cmd_create(args: argparse.Namespace) -> int:
         narration_enabled=not getattr(args, "no_narration", False),
         render_enabled=not getattr(args, "no_render", False),
         export_enabled=getattr(args, "export", False),
+        options={
+            "ai_visual_fill": getattr(args, "ai_visual_fill", False),
+            "visual_provider": getattr(args, "visual_provider", "prompt_card_only"),
+            "visual_asset_type": getattr(args, "visual_asset_type", ""),
+        },
         content_format=getattr(args, "content_format", "") or "",
         audience=getattr(args, "audience", "") or "",
         tone=getattr(args, "tone", "") or "",
@@ -151,6 +156,14 @@ def cmd_rerender(args: argparse.Namespace) -> int:
     if runs_base:
         kw["runs_base"] = runs_base
 
+    if getattr(args, "ai_visual_fill", False):
+        from genesis.ai_visuals.visual_fill import run_visual_fill_for_run
+        run_visual_fill_for_run(
+            args.job_id,
+            runs_base=runs_base,
+            provider_mode=getattr(args, "visual_provider", "prompt_card_only"),
+        )
+
     _header(f"Rerender: {args.job_id}")
     result = render_run_video(args.job_id, **kw)
     _print(f"  Status:  {result.status}")
@@ -214,6 +227,9 @@ def build_parser() -> argparse.ArgumentParser:
     cr.add_argument("--no-narration", action="store_true")
     cr.add_argument("--no-render", action="store_true")
     cr.add_argument("--export", action="store_true")
+    cr.add_argument("--ai-visual-fill", dest="ai_visual_fill", action="store_true")
+    cr.add_argument("--visual-provider", dest="visual_provider", default="prompt_card_only")
+    cr.add_argument("--visual-asset-type", dest="visual_asset_type", default="")
 
     sub.add_parser("templates", help="List available templates")
 
@@ -229,6 +245,8 @@ def build_parser() -> argparse.ArgumentParser:
     rr.add_argument("--transition-preset", dest="transition_preset", default="auto")
     rr.add_argument("--no-beat-sync", action="store_true")
     rr.add_argument("--no-motion-effects", action="store_true")
+    rr.add_argument("--ai-visual-fill", dest="ai_visual_fill", action="store_true")
+    rr.add_argument("--visual-provider", dest="visual_provider", default="prompt_card_only")
 
     st = sub.add_parser("status", help="Show run status")
     st.add_argument("job_id")

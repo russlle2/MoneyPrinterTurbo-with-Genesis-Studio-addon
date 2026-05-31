@@ -1,0 +1,11 @@
+{
+  "enabled": false,
+  "provider_mode": "prompt_card_only",
+  "default_asset_type": "image",
+  "aspect_ratio": "9:16",
+  "duration_seconds": 4,
+  "allow_local_comfyui": false,
+  "allow_external_paid": false,
+  "output_dir": "generated_visuals",
+  "debug_prompts": false
+}

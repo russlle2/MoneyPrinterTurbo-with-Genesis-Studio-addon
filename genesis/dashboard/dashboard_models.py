@@ -33,6 +33,8 @@ class DashboardRunCard:
     has_export: bool
     transition_preset: str = ""
     beat_sync_status: str = ""
+    missing_scene_count: int = 0
+    generated_visual_count: int = 0
     warnings: list[str] = field(default_factory=list)
     suggested_commands: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -58,6 +60,8 @@ class DashboardRunCard:
             "has_export": self.has_export,
             "transition_preset": self.transition_preset,
             "beat_sync_status": self.beat_sync_status,
+            "missing_scene_count": self.missing_scene_count,
+            "generated_visual_count": self.generated_visual_count,
             "warnings": self.warnings,
             "suggested_commands": self.suggested_commands,
             "notes": self.notes,

@@ -119,6 +119,15 @@ def read_export_status_safe(run_dir: Path, record_export_dir: str) -> dict[str, 
     return {"export_dir": export_dir, "has_export": has_export}
 
 
+def read_ai_visual_status_safe(run_dir: Path) -> dict[str, Any]:
+    gvm = _safe_json(run_dir / "generated_visuals_manifest.json")
+    return {
+        "missing_scene_count": int(gvm.get("missing_scene_count", 0)) if gvm else 0,
+        "generated_visual_count": int(gvm.get("generated_asset_count", 0)) if gvm else 0,
+        "has_fill_report": (run_dir / "ai_visual_fill_report.md").is_file(),
+    }
+
+
 def read_transition_status_safe(run_dir: Path) -> dict[str, str]:
     tp = _safe_json(run_dir / "transition_plan.json")
     bt = _safe_json(run_dir / "beat_timing.json")
@@ -192,6 +201,7 @@ def build_run_card(
 
     has_audio = (run_dir / "mixed_audio.mp3").is_file()
     trans = read_transition_status_safe(run_dir)
+    ai_vis = read_ai_visual_status_safe(run_dir)
 
     warnings = _scrub_list(list(record.warnings))
     if media["placeholders"]:
@@ -219,10 +229,18 @@ def build_run_card(
         has_export=export_info["has_export"],
         transition_preset=trans.get("transition_preset", ""),
         beat_sync_status=trans.get("beat_sync_status", ""),
+        missing_scene_count=ai_vis.get("missing_scene_count", 0),
+        generated_visual_count=ai_vis.get("generated_visual_count", 0),
         warnings=warnings[:8],
         notes=[],
     )
     card.suggested_commands = _suggested_commands(card)
+    if ai_vis.get("missing_scene_count", 0) or ai_vis.get("has_fill_report"):
+        card.suggested_commands.insert(
+            0,
+            f"python -m genesis.ai_visuals.visual_cli fill-and-render {card.job_id} "
+            f"--provider prompt_card_only",
+        )
     return card
 
 
@@ -301,7 +319,11 @@ def write_dashboard_html(
         if card.transition_preset:
             trans_line = f'<span class="badge">{_e(card.transition_preset)}</span> '
         if card.beat_sync_status:
-            trans_line += f'<span class="badge">beats:{_e(card.beat_sync_status)}</span>'
+            trans_line += f'<span class="badge">beats:{_e(card.beat_sync_status)}</span> '
+        if card.missing_scene_count:
+            trans_line += f'<span class="badge warn">{card.missing_scene_count} missing</span> '
+        if card.generated_visual_count:
+            trans_line += f'<span class="badge">{card.generated_visual_count} generated</span>'
         ph_line = (
             f'<span class="badge warn">{card.placeholder_scene_count} placeholder(s)</span>'
             if card.placeholder_scene_count
