@@ -158,6 +158,19 @@ def cmd_batch_export(args: argparse.Namespace) -> int:
     return 0 if result.failed == 0 else 1
 
 
+def cmd_dashboard(args: argparse.Namespace) -> int:
+    from genesis.dashboard.dashboard_builder import build_dashboard
+
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else None
+    index_path = Path(args.index_path) if getattr(args, "index_path", "") else None
+    result = build_dashboard(runs_base=runs_base, index_path=index_path)
+    _header("Dashboard built")
+    _print(f"  Open:  {result.output_path}")
+    _print(f"  Runs:  {len(result.cards)}")
+    _print("  Or run: python -m genesis.dashboard.dashboard_cli open-path")
+    return 0
+
+
 def cmd_batch_status(args: argparse.Namespace) -> int:
     batches_base = Path(args.batches_base) if getattr(args, "batches_base", "") else None
     data = load_batch_summary(args.batch_id, batches_base=batches_base)
@@ -210,6 +223,8 @@ def build_parser() -> argparse.ArgumentParser:
     bs = sub.add_parser("batch-status", help="Show batch summary")
     bs.add_argument("batch_id")
 
+    sub.add_parser("dashboard", help="Build local review dashboard (alias)")
+
     return p
 
 
@@ -223,6 +238,7 @@ def main(argv: list[str] | None = None) -> int:
         "batch-rerender": cmd_batch_rerender,
         "batch-export": cmd_batch_export,
         "batch-status": cmd_batch_status,
+        "dashboard": cmd_dashboard,
     }
     if not args.command:
         parser.print_help()

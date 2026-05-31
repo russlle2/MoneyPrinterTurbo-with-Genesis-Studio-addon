@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genesis Studio Dashboard</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #0f1117; color: #e8e8ed; }
+header { margin-bottom: 24px; }
+h1 { margin: 0 0 8px; font-size: 1.5rem; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; }
+.stat { background: #1a1d27; padding: 8px 14px; border-radius: 8px; font-size: 0.9rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.card { background: #1a1d27; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.thumb { width: 100%; height: 180px; object-fit: cover; background: #252830; }
+.body { padding: 12px 14px; flex: 1; }
+.card h3 { margin: 0 0 6px; font-size: 1rem; word-break: break-all; }
+.idea { margin: 0 0 8px; font-size: 0.85rem; color: #a8a8b8; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; background: #333; color: #fff; }
+.badge.warn { background: #b45309; }
+.badge.status { font-weight: 600; }
+.detail, .links { font-size: 0.8rem; margin: 4px 0; color: #9ca3af; }
+.path { word-break: break-all; }
+.warns { margin-top: 6px; }
+a { color: #60a5fa; }
+pre.cmds { font-size: 0.72rem; white-space: pre-wrap; background: #0f1117; padding: 8px; border-radius: 6px; }
+details summary { cursor: pointer; font-size: 0.85rem; color: #94a3b8; }
+footer { margin-top: 32px; font-size: 0.8rem; color: #6b7280; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Genesis Studio Dashboard</h1>
+  <p>Generated 2026-05-31T00:15:22.760970+00:00</p>
+  <div class="stats">
+    <span class="stat">Total: 1</span>
+    <span class="stat">Complete: 1</span>
+    <span class="stat">Partial: 0</span>
+    <span class="stat">Failed: 0</span>
+    <span class="stat">Missing video: 0</span>
+    <span class="stat">Ready to export: 1</span>
+    <span class="stat">With placeholders: 0</span>
+  </div>
+</header>
+<main class="grid">
+
+<article class="card">
+  <img class="thumb" src="thumbnails/solar-lighter-real-test-001.jpg" alt="solar-lighter-real-test-001" loading="lazy">
+  <div class="body">
+    <h3>solar-lighter-real-test-001</h3>
+    <p class="idea">My girlfriend demonstrates a solar-powered lighter that went viral</p>
+    <div class="meta">
+      <span class="badge status" style="background:#22c55e">complete</span>
+      <span class="badge">—</span>
+      <span class="badge">clapper</span>
+      
+    </div>
+    <p class="detail">Media: no manifest · Audio mix: no</p>
+    <p class="links"><a href="../runs/solar-lighter-real-test-001/draft_video.mp4">draft video</a> ·  · Export: <em>not exported</em></p>
+    <div class="warns"></div>
+    <details><summary>Commands</summary><pre class="cmds">python -m genesis.creator.creator_cli rerender solar-lighter-real-test-001 --platform clapper --brand clean_creator<br>python -m genesis.project.batch_cli batch-export solar-lighter-real-test-001 --platform clapper<br>python -m genesis.project.batch_cli index<br>python -m genesis.dashboard.dashboard_cli build</pre></details>
+  </div>
+</article>
+</main>
+<footer>Local static dashboard — no external assets. Open file:///…/assets/dashboard/index.html</footer>
+</body>
+</html>

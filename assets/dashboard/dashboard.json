@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-05-31T00:15:22.760970+00:00",
+  "total_runs": 1,
+  "complete_runs": 1,
+  "partial_runs": 0,
+  "failed_runs": 0,
+  "missing_video_runs": 0,
+  "ready_to_export_runs": 1,
+  "runs_with_placeholders": 0,
+  "runs": [
+    {
+      "job_id": "solar-lighter-real-test-001",
+      "idea": "My girlfriend demonstrates a solar-powered lighter that went viral",
+      "template": "",
+      "status": "complete",
+      "primary_platform": "clapper",
+      "brand_preset": "",
+      "run_dir": "../runs/solar-lighter-real-test-001",
+      "draft_video_path": "../runs/solar-lighter-real-test-001/draft_video.mp4",
+      "thumbnail_path": "thumbnails/solar-lighter-real-test-001.jpg",
+      "review_html_path": "",
+      "export_dir": "",
+      "has_media_manifest": false,
+      "matched_scene_count": 0,
+      "total_scene_count": 0,
+      "placeholder_scene_count": 0,
+      "has_audio_mix": false,
+      "has_export": false,
+      "warnings": [],
+      "suggested_commands": [
+        "python -m genesis.creator.creator_cli rerender solar-lighter-real-test-001 --platform clapper --brand clean_creator",
+        "python -m genesis.project.batch_cli batch-export solar-lighter-real-test-001 --platform clapper",
+        "python -m genesis.project.batch_cli index",
+        "python -m genesis.dashboard.dashboard_cli build"
+      ],
+      "notes": []
+    }
+  ],
+  "warnings": [],
+  "notes": []
+}
