@@ -1,0 +1,80 @@
+{
+  "genesis_metadata": {
+    "blueprint_id": "cogvideox",
+    "blueprint_version": "1.0",
+    "format": "comfyui_api_prompt",
+    "purpose": "Generate coherent image-to-video or prompt-guided clips. Useful for hero shots and narrative scenes.",
+    "required_placeholders": [
+      "INPUT_IMAGE_PATH",
+      "PROMPT_TEXT",
+      "NEGATIVE_PROMPT_TEXT",
+      "OUTPUT_PREFIX",
+      "COGVIDEOX_MODEL_PATH"
+    ],
+    "expected_inputs": [
+      "optional reference still image",
+      "scene description prompt",
+      "CogVideoX model or pipeline identifier"
+    ],
+    "expected_outputs": [
+      "coherent short video clip suitable for hero or narrative inserts"
+    ],
+    "validation_warning": "CogVideoX ComfyUI wrappers vary widely (CogVideoXWrapper, CogVideoX_Fun, etc.). Treat class_type values as candidates until validate_workflow() passes.",
+    "node_types_used": [
+      "LoadImage",
+      "CogVideoXLoader",
+      "CogVideoXTextEncode",
+      "CogVideoXSampler",
+      "CogVideoXDecode",
+      "VHS_VideoCombine"
+    ]
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "INPUT_IMAGE_PATH"
+    }
+  },
+  "2": {
+    "class_type": "CogVideoXLoader",
+    "inputs": {
+      "model_path": "COGVIDEOX_MODEL_PATH"
+    }
+  },
+  "3": {
+    "class_type": "CogVideoXTextEncode",
+    "inputs": {
+      "prompt": "PROMPT_TEXT",
+      "negative_prompt": "NEGATIVE_PROMPT_TEXT",
+      "pipeline": ["2", 0]
+    }
+  },
+  "4": {
+    "class_type": "CogVideoXSampler",
+    "inputs": {
+      "pipeline": ["2", 0],
+      "conditioning": ["3", 0],
+      "init_image": ["1", 0],
+      "seed": 0,
+      "steps": 30,
+      "cfg": 6.0,
+      "frames": 49
+    }
+  },
+  "5": {
+    "class_type": "CogVideoXDecode",
+    "inputs": {
+      "latents": ["4", 0],
+      "pipeline": ["2", 0]
+    }
+  },
+  "6": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["5", 0],
+      "frame_rate": 16,
+      "filename_prefix": "OUTPUT_PREFIX",
+      "format": "video/h264-mp4"
+    }
+  }
+}

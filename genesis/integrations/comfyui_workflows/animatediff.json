@@ -1,0 +1,114 @@
+{
+  "genesis_metadata": {
+    "blueprint_id": "animatediff",
+    "blueprint_version": "1.0",
+    "format": "comfyui_api_prompt",
+    "purpose": "Turn a still image into a short animated clip. Useful for smooth motion, spiritual/abstract b-roll, and cinematic ambience.",
+    "required_placeholders": [
+      "INPUT_IMAGE_PATH",
+      "PROMPT_TEXT",
+      "NEGATIVE_PROMPT_TEXT",
+      "OUTPUT_PREFIX",
+      "SDXL_OR_FLUX_MODEL_PATH",
+      "ANIMATEDIFF_MODEL_PATH"
+    ],
+    "expected_inputs": [
+      "still image file",
+      "positive and negative prompts",
+      "SDXL or Flux checkpoint filename",
+      "AnimateDiff motion module filename"
+    ],
+    "expected_outputs": [
+      "animated frame sequence or video under ComfyUI output directory"
+    ],
+    "validation_warning": "AnimateDiff node class names vary by install (AnimateDiff-Evolved, ComfyUI-AnimateDiff-Evolved, etc.). Run validate_workflow() before execution. Strip genesis_metadata before submitting to /prompt if your ComfyUI build rejects unknown root keys.",
+    "node_types_used": [
+      "LoadImage",
+      "CheckpointLoaderSimple",
+      "CLIPTextEncode",
+      "AnimateDiffLoader",
+      "ApplyAnimateDiffModel",
+      "KSampler",
+      "VAEDecode",
+      "VHS_VideoCombine"
+    ]
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "INPUT_IMAGE_PATH"
+    }
+  },
+  "2": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL_OR_FLUX_MODEL_PATH"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "NEGATIVE_PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "5": {
+    "class_type": "AnimateDiffLoader",
+    "inputs": {
+      "model_name": "ANIMATEDIFF_MODEL_PATH"
+    }
+  },
+  "6": {
+    "class_type": "ApplyAnimateDiffModel",
+    "inputs": {
+      "motion_model": ["5", 0],
+      "model": ["2", 0]
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 0,
+      "steps": 20,
+      "cfg": 7.0,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.85,
+      "model": ["6", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["8", 0]
+    }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 512,
+      "batch_size": 16
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["2", 2]
+    }
+  },
+  "10": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["9", 0],
+      "frame_rate": 8,
+      "filename_prefix": "OUTPUT_PREFIX",
+      "format": "video/h264-mp4"
+    }
+  }
+}

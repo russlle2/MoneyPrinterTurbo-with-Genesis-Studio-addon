@@ -1,0 +1,116 @@
+{
+  "genesis_metadata": {
+    "blueprint_id": "motionctrl",
+    "blueprint_version": "1.0",
+    "format": "comfyui_api_prompt",
+    "purpose": "Add camera or object movement to still images. Useful for controlled pans, pushes, zooms, and cinematic camera motion.",
+    "required_placeholders": [
+      "INPUT_IMAGE_PATH",
+      "PROMPT_TEXT",
+      "NEGATIVE_PROMPT_TEXT",
+      "OUTPUT_PREFIX",
+      "SDXL_OR_FLUX_MODEL_PATH",
+      "MOTIONCTRL_MODEL_PATH"
+    ],
+    "expected_inputs": [
+      "still image",
+      "motion/camera description prompt",
+      "SDXL or Flux checkpoint",
+      "MotionCtrl model weights identifier"
+    ],
+    "expected_outputs": [
+      "video clip with directed camera or object motion"
+    ],
+    "validation_warning": "MotionCtrl custom nodes are not in core ComfyUI. Validate MotionCtrlLoader / MotionCtrlApply (or equivalent) against /object_info before running.",
+    "node_types_used": [
+      "LoadImage",
+      "CheckpointLoaderSimple",
+      "CLIPTextEncode",
+      "MotionCtrlLoader",
+      "MotionCtrlApply",
+      "KSampler",
+      "VAEDecode",
+      "VHS_VideoCombine"
+    ]
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "INPUT_IMAGE_PATH"
+    }
+  },
+  "2": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL_OR_FLUX_MODEL_PATH"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "NEGATIVE_PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "5": {
+    "class_type": "MotionCtrlLoader",
+    "inputs": {
+      "model_name": "MOTIONCTRL_MODEL_PATH"
+    }
+  },
+  "6": {
+    "class_type": "MotionCtrlApply",
+    "inputs": {
+      "motionctrl_model": ["5", 0],
+      "model": ["2", 0],
+      "image": ["1", 0],
+      "camera_motion": "pan_right"
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 0,
+      "steps": 22,
+      "cfg": 7.5,
+      "sampler_name": "euler",
+      "scheduler": "normal",
+      "denoise": 0.75,
+      "model": ["6", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["8", 0]
+    }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 768,
+      "height": 432,
+      "batch_size": 14
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["2", 2]
+    }
+  },
+  "10": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["9", 0],
+      "frame_rate": 8,
+      "filename_prefix": "OUTPUT_PREFIX",
+      "format": "video/h264-mp4"
+    }
+  }
+}

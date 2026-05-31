@@ -1,0 +1,89 @@
+{
+  "genesis_metadata": {
+    "blueprint_id": "svd",
+    "blueprint_version": "1.0",
+    "format": "comfyui_api_prompt",
+    "purpose": "Generate smooth image-to-video motion from a single image. Useful for cinematic b-roll and subtle movement.",
+    "required_placeholders": [
+      "INPUT_IMAGE_PATH",
+      "PROMPT_TEXT",
+      "NEGATIVE_PROMPT_TEXT",
+      "OUTPUT_PREFIX",
+      "SVD_MODEL_PATH"
+    ],
+    "expected_inputs": [
+      "source still image",
+      "optional conditioning text",
+      "Stable Video Diffusion checkpoint filename"
+    ],
+    "expected_outputs": [
+      "short MP4 or frame sequence with subtle motion"
+    ],
+    "validation_warning": "SVD node names differ between ComfyUI core builds and community packs (SVD_img2vid, ImageOnlyCheckpointLoader, etc.). Validate with /object_info before running.",
+    "node_types_used": [
+      "LoadImage",
+      "ImageOnlyCheckpointLoader",
+      "SVD_img2vid_Conditioning",
+      "KSampler",
+      "VAEDecode",
+      "VHS_VideoCombine"
+    ]
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "INPUT_IMAGE_PATH"
+    }
+  },
+  "2": {
+    "class_type": "ImageOnlyCheckpointLoader",
+    "inputs": {
+      "ckpt_name": "SVD_MODEL_PATH"
+    }
+  },
+  "3": {
+    "class_type": "SVD_img2vid_Conditioning",
+    "inputs": {
+      "clip_vision": ["2", 1],
+      "init_image": ["1", 0],
+      "vae": ["2", 2],
+      "width": 1024,
+      "height": 576,
+      "video_frames": 25,
+      "motion_bucket_id": 127,
+      "fps": 6,
+      "augmentation_level": 0.0
+    }
+  },
+  "4": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 0,
+      "steps": 20,
+      "cfg": 2.5,
+      "sampler_name": "euler",
+      "scheduler": "karras",
+      "denoise": 1.0,
+      "model": ["2", 0],
+      "positive": ["3", 0],
+      "negative": ["3", 1],
+      "latent_image": ["3", 2]
+    }
+  },
+  "5": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["4", 0],
+      "vae": ["2", 2]
+    }
+  },
+  "6": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["5", 0],
+      "frame_rate": 6,
+      "filename_prefix": "OUTPUT_PREFIX",
+      "format": "video/h264-mp4"
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "genesis_metadata": {
+    "blueprint_id": "hotshotxl",
+    "blueprint_version": "1.0",
+    "format": "comfyui_api_prompt",
+    "purpose": "Generate high-energy stylized motion. Useful for TikTok, Reels, and Shorts transitions.",
+    "required_placeholders": [
+      "INPUT_IMAGE_PATH",
+      "PROMPT_TEXT",
+      "NEGATIVE_PROMPT_TEXT",
+      "OUTPUT_PREFIX",
+      "SDXL_OR_FLUX_MODEL_PATH",
+      "HOTSHOT_XL_MODEL_PATH"
+    ],
+    "expected_inputs": [
+      "reference or style still image",
+      "high-energy prompt text",
+      "SDXL checkpoint",
+      "Hotshot-XL motion module"
+    ],
+    "expected_outputs": [
+      "short punchy vertical-friendly motion clip"
+    ],
+    "validation_warning": "Hotshot-XL nodes are community-specific. Confirm HotshotXL / Hotshot-XL custom nodes via ComfyUI Manager before running.",
+    "node_types_used": [
+      "LoadImage",
+      "CheckpointLoaderSimple",
+      "CLIPTextEncode",
+      "HotshotXLLoader",
+      "HotshotXLApply",
+      "KSampler",
+      "VAEDecode",
+      "VHS_VideoCombine"
+    ]
+  },
+  "1": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "INPUT_IMAGE_PATH"
+    }
+  },
+  "2": {
+    "class_type": "CheckpointLoaderSimple",
+    "inputs": {
+      "ckpt_name": "SDXL_OR_FLUX_MODEL_PATH"
+    }
+  },
+  "3": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "NEGATIVE_PROMPT_TEXT",
+      "clip": ["2", 1]
+    }
+  },
+  "5": {
+    "class_type": "HotshotXLLoader",
+    "inputs": {
+      "model_name": "HOTSHOT_XL_MODEL_PATH"
+    }
+  },
+  "6": {
+    "class_type": "HotshotXLApply",
+    "inputs": {
+      "hotshot_model": ["5", 0],
+      "model": ["2", 0],
+      "image": ["1", 0]
+    }
+  },
+  "7": {
+    "class_type": "KSampler",
+    "inputs": {
+      "seed": 0,
+      "steps": 18,
+      "cfg": 8.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 0.9,
+      "model": ["6", 0],
+      "positive": ["3", 0],
+      "negative": ["4", 0],
+      "latent_image": ["8", 0]
+    }
+  },
+  "8": {
+    "class_type": "EmptyLatentImage",
+    "inputs": {
+      "width": 512,
+      "height": 896,
+      "batch_size": 8
+    }
+  },
+  "9": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["7", 0],
+      "vae": ["2", 2]
+    }
+  },
+  "10": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["9", 0],
+      "frame_rate": 12,
+      "filename_prefix": "OUTPUT_PREFIX",
+      "format": "video/h264-mp4"
+    }
+  }
+}
