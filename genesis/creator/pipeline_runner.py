@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -72,6 +73,7 @@ def create_workflow_step(
         platforms = [req.primary_platform] + platforms
 
     try:
+        use_local_llm = bool(req.options.get("use_local_llm")) if req.options else False
         result = run_social_media_workflow(
             req.idea,
             job_id=req.job_id or None,
@@ -83,6 +85,7 @@ def create_workflow_step(
             content_format=content_format,
             narration_enabled=req.narration_enabled,
             write_package=True,
+            use_local_llm=use_local_llm,
         )
         job_id = result.job_id
         # The workflow always writes to its own _RUNS_BASE; compute expected run_dir here
@@ -153,27 +156,66 @@ def trim_media_step(
         return _step("trim_media", CreatorStatus.FAILED, warnings=[str(exc)])
 
 
+def _parse_duration_seconds(req: CreatorRunRequest) -> float:
+    opts = req.options or {}
+    raw = opts.get("duration_seconds") or opts.get("duration") or ""
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    m = re.search(r"\d+(?:\.\d+)?", str(raw))
+    return float(m.group(0)) if m else 30.0
+
+
 def render_video_step(
     req: CreatorRunRequest,
     *,
     runs_base: Path | None = None,
 ) -> CreatorRunStep:
     runs_base = runs_base or _RUNS_BASE
+    opts = req.options or {}
+    # Forge (real AI video generation) is the default engine. Pass
+    # video_engine="legacy" to use the older card/slide renderer.
+    engine = str(opts.get("video_engine", "forge")).lower()
+
+    if not req.render_enabled:
+        return _step("render_video", CreatorStatus.SKIPPED, notes=["render disabled (script/plan only)"])
+
+    run_dir = runs_base / req.job_id
+
+    if engine == "forge":
+        try:
+            from genesis.forge.creator_bridge import render_forge_video
+            res = render_forge_video(
+                req.job_id,
+                run_dir=run_dir,
+                idea=req.idea,
+                target_platform=req.primary_platform or "tiktok",
+                brand_preset=req.brand_preset or "clean_creator",
+                duration_seconds=_parse_duration_seconds(req),
+            )
+            outputs = [res["output_path"]] if res.get("output_path") else []
+            status = CreatorStatus.COMPLETE if res.get("status") == "complete" else CreatorStatus.FAILED
+            notes = [f"engine={res.get('engine_used', 'forge')}", f"scenes={res.get('scene_count', 0)}"]
+            return _step("render_video", status, outputs=outputs,
+                         warnings=res.get("warnings", [])[:5], notes=notes)
+        except Exception as exc:  # noqa: BLE001
+            return _step("render_video", CreatorStatus.FAILED, warnings=[f"forge: {exc}"])
+
+    # Legacy card/slide renderer (captions disabled to avoid burned-in text).
     try:
-        tp = req.options.get("transition_preset", "auto") if req.options else "auto"
+        tp = opts.get("transition_preset", "auto")
         result = render_run_video(
             req.job_id,
             target_platform=req.primary_platform or "tiktok",
             brand_preset=req.brand_preset or "clean_creator",
             render_enabled=req.render_enabled,
+            captions_enabled=False,
             audio_mix_enabled=bool(req.music_path or (runs_base / req.job_id / "music").is_dir()),
             music_path=req.music_path or None,
             runs_base=runs_base,
             transition_preset=str(tp),
-            beat_sync_enabled=req.options.get("beat_sync_enabled", True) if req.options else True,
-            motion_effects_enabled=req.options.get("motion_effects_enabled", True) if req.options else True,
+            beat_sync_enabled=opts.get("beat_sync_enabled", True),
+            motion_effects_enabled=opts.get("motion_effects_enabled", True),
         )
-        run_dir = runs_base / req.job_id
         outputs = [str(run_dir / "draft_video.mp4")] if result.output_path else []
         return _step("render_video", result.status,
                      outputs=outputs, warnings=result.warnings[:5])

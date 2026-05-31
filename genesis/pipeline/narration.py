@@ -11,7 +11,11 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from genesis.integrations.voice_provider import generate_voice, voice_backend_ready
+from genesis.integrations.voice_provider import (
+    generate_voice,
+    voice_backend_ready,
+    voiceover_enabled,
+)
 from genesis.schemas.core import AssetType, GeneratedAsset, JobStatus
 from genesis.utils.config_loader import load_genesis_settings
 from genesis.utils.logger import get_logger
@@ -67,6 +71,22 @@ def generate_narration_from_script(
     text = (script_text or "").strip()
     request_id = job_id or uuid.uuid4().hex[:12]
     asset_id = f"narration-{request_id}"
+
+    # Global kill switch: voiceover is paused by default to avoid wasted API
+    # spend on poor output. Skip cleanly instead of calling any paid backend.
+    if not voiceover_enabled():
+        logger.info("narration skipped: voiceover globally disabled (job %s)", request_id)
+        return GeneratedAsset(
+            id=asset_id,
+            request_id=request_id,
+            scene_id=scene_id,
+            asset_type=AssetType.AUDIO,
+            path="",
+            provider=backend,
+            prompt="",
+            status=JobStatus.SKIPPED,
+            metadata={"reason": "voiceover_disabled"},
+        )
 
     if not text:
         if skip_if_empty:

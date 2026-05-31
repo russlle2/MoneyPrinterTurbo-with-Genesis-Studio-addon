@@ -162,6 +162,27 @@ def write_provider_debug_report(
     return path
 
 
+def check_pollinations_available() -> tuple[bool, str]:
+    """Check if Pollinations.ai is reachable (requires internet)."""
+    try:
+        from genesis.integrations.pollinations_client import pollinations_available
+        return pollinations_available()
+    except Exception as exc:  # noqa: BLE001
+        return False, f"pollinations import error: {exc}"
+
+
+def check_auto1111_available(config: dict[str, Any] | None = None) -> tuple[bool, str]:
+    """Check if Automatic1111 SD WebUI is running."""
+    cfg = config or load_ai_visuals_config()
+    endpoint = cfg.get("auto1111", {}).get("endpoint_url", "http://127.0.0.1:7860") \
+        if isinstance(cfg.get("auto1111"), dict) else "http://127.0.0.1:7860"
+    try:
+        from genesis.integrations.auto1111_client import auto1111_available
+        return auto1111_available(endpoint)
+    except Exception as exc:  # noqa: BLE001
+        return False, f"auto1111 import error: {exc}"
+
+
 def visual_provider_ready(
     provider_mode: str,
     config: dict[str, Any] | None = None,
@@ -175,6 +196,10 @@ def visual_provider_ready(
         return True, ""
     if mode == "local_comfyui":
         return check_comfyui_available(cfg)
+    if mode == "pollinations":
+        return check_pollinations_available()
+    if mode == "auto1111":
+        return check_auto1111_available(cfg)
     if mode == "auto":
         return True, ""
     return True, ""
@@ -189,14 +214,23 @@ def choose_visual_provider(
     cfg = config or load_ai_visuals_config()
     mode = (provider_mode or cfg.get("provider_mode", "prompt_card_only")).lower()
 
-    if not cfg.get("enabled") and mode == "auto":
-        return "prompt_card_only"
-
     if mode == "auto":
-        if asset_type == "video" and cfg.get("allow_local_comfyui"):
+        # Priority: ComfyUI (if configured) → Auto1111 (if running) → Pollinations (free, online)
+        if cfg.get("allow_local_comfyui"):
             ready, _ = check_comfyui_available(cfg)
             if ready:
                 return "local_comfyui"
+        # Try Auto1111 (local Stable Diffusion)
+        if cfg.get("allow_auto1111", True):
+            ready, _ = check_auto1111_available(cfg)
+            if ready:
+                return "auto1111"
+        # Try Pollinations (free, no API key, internet required)
+        if cfg.get("allow_pollinations", True):
+            ready, _ = check_pollinations_available()
+            if ready:
+                return "pollinations"
+        # Last resort: cinematic placeholder cards
         return "prompt_card_only"
 
     if mode == "local_comfyui":
@@ -205,6 +239,15 @@ def choose_visual_provider(
         ready, _ = check_comfyui_available(cfg)
         if not ready:
             return "prompt_card_only"
+
+    if mode == "auto1111":
+        ready, _ = check_auto1111_available(cfg)
+        if not ready:
+            return "prompt_card_only"
+
+    if mode == "pollinations":
+        # Always return pollinations — it will fail gracefully if offline
+        return "pollinations"
 
     if mode in ("openai", "external_paid") and not cfg.get("allow_external_paid"):
         return "prompt_card_only"
@@ -418,6 +461,102 @@ def generate_with_local_comfyui_if_available(
         return card
 
 
+def generate_with_pollinations(
+    prompt: VisualGenerationPrompt,
+    output_path: Path,
+    *,
+    brand_preset: str = "cinematic_dark",
+    content_format: str = "",
+    config: dict[str, Any] | None = None,
+) -> GeneratedVisualAsset:
+    """Generate an image via Pollinations.ai (free, no API key, FLUX model)."""
+    warnings: list[str] = []
+    try:
+        from genesis.integrations.pollinations_client import generate_scene_image
+
+        result = generate_scene_image(
+            prompt.prompt_text,
+            output_path.with_suffix(".jpg"),
+            brand_preset=brand_preset,
+            content_format=content_format,
+            aspect_ratio=prompt.aspect_ratio or "9:16",
+        )
+        if result["success"]:
+            p = Path(result["path"])
+            return GeneratedVisualAsset(
+                asset_id=f"poll_{prompt.scene_id}",
+                scene_id=prompt.scene_id,
+                prompt_id=prompt.prompt_id,
+                asset_type="image",
+                provider="pollinations",
+                path=str(p),
+                width=576,
+                height=1024,
+                duration_seconds=prompt.duration_seconds,
+                status=VisualFillStatus.COMPLETE,
+                source_type="generated",
+                notes=["generated via Pollinations.ai / FLUX"],
+            )
+        warnings.append(result.get("error", "Pollinations generation failed"))
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(str(exc))
+
+    card = generate_prompt_card_only(prompt, output_path.parent)
+    card.provider = "pollinations"
+    card.status = VisualFillStatus.PARTIAL
+    card.warnings = warnings
+    return card
+
+
+def generate_with_auto1111(
+    prompt: VisualGenerationPrompt,
+    output_path: Path,
+    *,
+    config: dict[str, Any] | None = None,
+) -> GeneratedVisualAsset:
+    """Generate an image via Automatic1111 Stable Diffusion WebUI."""
+    cfg = config or load_ai_visuals_config()
+    a1111_cfg = cfg.get("auto1111", {}) if isinstance(cfg.get("auto1111"), dict) else {}
+    endpoint = a1111_cfg.get("endpoint_url", "http://127.0.0.1:7860")
+    warnings: list[str] = []
+    try:
+        from genesis.integrations.auto1111_client import generate_image
+
+        result = generate_image(
+            prompt.prompt_text,
+            output_path.with_suffix(".png"),
+            negative_prompt=prompt.negative_prompt or "blurry, low quality, distorted",
+            width=576,
+            height=1024,
+            endpoint=endpoint,
+        )
+        if result["success"]:
+            p = Path(result["path"])
+            return GeneratedVisualAsset(
+                asset_id=f"a1111_{prompt.scene_id}",
+                scene_id=prompt.scene_id,
+                prompt_id=prompt.prompt_id,
+                asset_type="image",
+                provider="auto1111",
+                path=str(p),
+                width=576,
+                height=1024,
+                duration_seconds=prompt.duration_seconds,
+                status=VisualFillStatus.COMPLETE,
+                source_type="generated",
+                notes=["generated via Automatic1111"],
+            )
+        warnings.append(result.get("error", "Auto1111 generation failed"))
+    except Exception as exc:  # noqa: BLE001
+        warnings.append(str(exc))
+
+    card = generate_prompt_card_only(prompt, output_path.parent)
+    card.provider = "auto1111"
+    card.status = VisualFillStatus.PARTIAL
+    card.warnings = warnings
+    return card
+
+
 def validate_generated_asset(asset: GeneratedVisualAsset) -> list[str]:
     warnings: list[str] = []
     if asset.asset_type in ("image", "video") and asset.path:
@@ -471,5 +610,16 @@ def generate_visual_asset(
         return generate_with_local_comfyui_if_available(
             prompt, out_path, run_dir=run_dir, config=cfg,
         )
+
+    if mode == "pollinations":
+        # Extract brand/content info from config if available
+        brand_preset = cfg.get("brand_preset", "cinematic_dark")
+        content_format = cfg.get("content_format", "")
+        return generate_with_pollinations(
+            prompt, out_path, brand_preset=brand_preset, content_format=content_format, config=cfg,
+        )
+
+    if mode == "auto1111":
+        return generate_with_auto1111(prompt, out_path, config=cfg)
 
     return generate_prompt_card_only(prompt, out_dir)

@@ -612,11 +612,32 @@ def _hooks_for_context(
         ])
 
     elif fmt == "personal_story":
+        from genesis.creative.idea_normalizer import extract_narrative_first_sentence, is_narrative_idea
+        raw = norm.raw_idea
+        first_sent = extract_narrative_first_sentence(raw)
+        raw_lower = raw.lower()
+        is_journey = any(w in raw_lower for w in ("van", "drive", "country", "travel", "road"))
+        is_kindness = any(w in raw_lower for w in ("good deed", "joy", "kind", "help", "change"))
+        is_cinematic = any(w in raw_lower for w in ("cinematic", "emotional", "ai generated", "ai visuals"))
         candidates.extend([
-            ("story_open_loop", f"I didn't expect {s} to go this way.", "Personal open loop."),
-            ("emotional", f"This moment with {s} still stays with me.", "Emotional anchor."),
-            ("proof_based", f"Here's what actually happened — no polish.", "Authenticity proof."),
+            ("proof_based", "Here's what actually happened — no polish.", "Authenticity proof."),
+            ("story_open_loop", "I chose a different kind of life. This is what that looks like.", "Open loop on life choice."),
         ])
+        if first_sent and len(first_sent) < 100:
+            candidates.insert(0, ("emotional", first_sent.rstrip(".,!?") + ".", "Direct first sentence hook."))
+        if is_journey:
+            candidates.append(("story_open_loop", "I'm driving across the country in my van — here's why.", "Journey open loop."))
+            candidates.append(("emotional", "Every mile I drive, I look for someone who needs to be seen.", "Journey kindness hook."))
+        if is_kindness:
+            candidates.append(("emotional", "I've made it my mission to change one life a day. This is day one.", "Good deed mission hook."))
+            candidates.append(("story_open_loop", "What if one stranger completely changed your day? That's what I do.", "Stranger kindness hook."))
+        if is_cinematic:
+            candidates.append(("emotional", "This is the most honest video I've ever made.", "Cinematic authenticity hook."))
+        # Remove any hook that still uses the broken clean_subject if it's not meaningful
+        candidates = [
+            (style, text, reason) for style, text, reason in candidates
+            if s.lower() not in text.lower() or len(s.split()) <= 3
+        ]
 
     elif fmt == "controversial_take":
         candidates.extend([
@@ -654,17 +675,29 @@ def _hooks_for_context(
     # Deterministic pick order with seed
     ordered = sorted(unique, key=lambda x: (x[0], x[1]))
     result: list[tuple[str, str, str]] = []
+    seen_texts: set[str] = set()
+    # Use a step that is coprime to any likely list length to avoid same-index collision
+    step = 3
+    if len(ordered) > 1:
+        # Ensure step is coprime to len(ordered)
+        for candidate_step in (3, 5, 2, 1):
+            import math
+            if math.gcd(candidate_step, len(ordered)) == 1:
+                step = candidate_step
+                break
     for i in range(min(n_hooks, len(ordered))):
-        idx = (seed + i * 7) % len(ordered)
-        result.append(ordered[idx])
-    # Fill if needed (bounded — avoid infinite loop when all candidates dedupe)
-    i = 0
-    max_attempts = max(n_hooks * 3, len(ordered) * 2)
-    while len(result) < n_hooks and ordered and i < max_attempts:
-        style, text, reason = ordered[(seed + i) % len(ordered)]
-        if text.lower() not in {r[1].lower() for r in result}:
+        idx = (seed + i * step) % len(ordered)
+        style, text, reason = ordered[idx]
+        if text.lower() not in seen_texts:
+            seen_texts.add(text.lower())
             result.append((style, text, reason))
-        i += 1
+    # Fill remaining with any unseen candidates
+    for style, text, reason in ordered:
+        if len(result) >= n_hooks:
+            break
+        if text.lower() not in seen_texts:
+            seen_texts.add(text.lower())
+            result.append((style, text, reason))
     return result[:n_hooks]
 
 
@@ -747,14 +780,198 @@ def _section_text_for_context(
             "Meaning": [f"Worth it for {aud} if you need this daily."],
             "CTA": [cta_text or f"Comment {kw} for questions."],
         }
+    elif fmt == "personal_story":
+        # Use actual raw idea fragments — not the broken clean_subject
+        from genesis.creative.idea_normalizer import extract_narrative_first_sentence
+        first_sentence = extract_narrative_first_sentence(norm.raw_idea)
+        idea_lower = norm.raw_idea.lower()
+        # Detect emotional/journey keywords
+        is_journey = any(w in idea_lower for w in ("drive", "van", "country", "journey", "travel"))
+        is_kindness = any(w in idea_lower for w in ("good deed", "joy", "help", "kind", "change"))
+        is_cinematic = any(w in idea_lower for w in ("cinematic", "emotional", "ai generated", "ai visuals"))
+
+        pattern_options = [first_sentence]
+        if is_journey:
+            pattern_options.append("I'm driving across the country — here's why.")
+        if is_kindness:
+            pattern_options.append("I'm trying to change the world one good deed at a time.")
+        if is_cinematic:
+            pattern_options.append("This is the life I'm choosing to live — on camera.")
+        pattern_options.append(f"Real talk: {first_sentence}")
+
+        proof_options = [
+            "This is my actual life — no script, no studio.",
+            "I film everything. You'll see what actually happens.",
+            "No rehearsal. Just what's real.",
+        ]
+        if is_journey:
+            proof_options.insert(0, "My van. My camera. No crew. Just me.")
+
+        teaching_options = []
+        if is_kindness and is_journey:
+            teaching_options = [
+                "I stop wherever I see someone struggling. I show up. That's it.",
+                "Meeting a stranger in their darkest moment and choosing to stay — that's the video.",
+                "Every single act of kindness I document starts with one decision: to pull over.",
+            ]
+        elif is_journey:
+            teaching_options = [
+                "The road reveals who you are. I'm finding that out in real time.",
+                "Every state I cross, I look for the person who needs to be seen.",
+            ]
+        else:
+            teaching_options = [
+                f"{mech.capitalize()}." if mech else "Here's the moment that changed everything.",
+                "The part nobody else films — the quiet human moment before it gets loud.",
+            ]
+
+        meaning_options = [
+            "We've forgotten that showing up for a stranger is still possible. This is proof.",
+            "Every video I make is evidence that kindness isn't dead.",
+            "One good deed can change someone's entire week. That's worth documenting.",
+        ]
+        if any(w in idea_lower for w in ("change", "world", "good deed", "joy")):
+            meaning_options.insert(0, "If you believe one person can still change things — this one's for you.")
+        if is_cinematic:
+            meaning_options.insert(0, "This is what I believe life should look like.")
+
+        cta_options_pool = [
+            cta_text,
+            "Follow the journey — next stop unknown.",
+            "Share this if you think one person can still change things.",
+            "Comment SAME if you've ever felt this pull to go out and do something real.",
+        ]
+        pools = {
+            "Pattern Interrupt": pattern_options,
+            "Proof": proof_options,
+            "Demonstration / Teaching": teaching_options,
+            "Meaning": meaning_options,
+            "CTA": [c for c in cta_options_pool if c],
+        }
+
+    elif fmt == "motivational_walkthrough":
+        from genesis.creative.idea_normalizer import extract_narrative_first_sentence
+        first_sentence = extract_narrative_first_sentence(norm.raw_idea)
+        pools = {
+            "Pattern Interrupt": [
+                f"One move. That's all this takes. Here it is.",
+                f"Most people skip the hardest part: starting. Watch.",
+                first_sentence if len(first_sentence) < 120 else "Here's what no one tells you about making real change.",
+            ],
+            "Proof": [
+                "I've done this myself — I'll walk you through every step.",
+                f"The results speak: {proof.rstrip('.')}." if proof else "Don't take my word for it — try it yourself.",
+            ],
+            "Demonstration / Teaching": [
+                f"{mech.capitalize()}." if mech else "Here's the step-by-step breakdown.",
+                "Follow along — you can do this by the end of this video.",
+            ],
+            "Meaning": [
+                f"If you're in {aud} and you've been waiting for a sign — this is it.",
+                "Motivation fades. Systems last. Here's the system.",
+            ],
+            "CTA": [
+                cta_text or "Comment READY if you're starting today.",
+                "Save this — you'll want to come back to it.",
+            ],
+        }
+
+    elif fmt == "controversial_take":
+        from genesis.creative.idea_normalizer import extract_narrative_first_sentence
+        first_sentence = extract_narrative_first_sentence(norm.raw_idea)
+        pools = {
+            "Pattern Interrupt": [
+                f"Unpopular opinion about {s} — hear me out.",
+                f"Everyone's wrong about {s}. Here's why.",
+                first_sentence if len(first_sentence) < 120 else f"Hot take: the {s} advice you keep hearing is backwards.",
+            ],
+            "Proof": [
+                f"{proof.capitalize()}." if proof else "I've tested both sides. Here's what I actually found.",
+                "My experience: not what the mainstream tells you.",
+            ],
+            "Demonstration / Teaching": [
+                f"{mech.capitalize()}." if mech else "Here's the alternative that actually works.",
+                "The approach nobody talks about — until now.",
+            ],
+            "Meaning": [
+                f"For {aud} who are tired of the same recycled advice — this one's different.",
+                "Question everything. Especially the popular stuff.",
+            ],
+            "CTA": [
+                cta_text or "Tell me your THOUGHTS in the comments.",
+                "Disagree? Comment — I'll pin the best debate reply.",
+            ],
+        }
+
+    elif fmt == "tutorial":
+        pools = {
+            "Pattern Interrupt": [
+                f"How to do {s} — fast version.",
+                f"Stop doing {s} the hard way. Here's the shortcut.",
+                f"Step-by-step {s} — under 60 seconds.",
+            ],
+            "Proof": [
+                f"{proof.capitalize()}." if proof else "I've done this dozens of times. This is the cleanest method.",
+                "No fluff — just the exact steps.",
+            ],
+            "Demonstration / Teaching": [
+                f"Step 1: {mech.rstrip('.')}." if mech else f"Start here and follow along.",
+                "Every step is on screen. Pause and replay if needed.",
+            ],
+            "Meaning": [
+                f"Once you know how to do {s} properly, everything gets easier.",
+                f"This saves {aud} hours of trial and error.",
+            ],
+            "CTA": [
+                cta_text or "Save this — you'll use it again.",
+                f"Comment {norm.cta_keyword} if you want a deeper breakdown.",
+            ],
+        }
+
+    elif fmt == "local_business_promo":
+        pools = {
+            "Pattern Interrupt": [
+                f"Quick look at {s} — does it live up to the local hype?",
+                f"Best kept secret in town? Let's see {s}.",
+            ],
+            "Proof": [
+                f"{proof.capitalize()}." if proof else "I showed up unannounced. Here's the real deal.",
+                "Real visit. Real impressions. No paid promotion.",
+            ],
+            "Demonstration / Teaching": [
+                f"{mech.capitalize()}." if mech else f"Here's what you get when you walk into {s}.",
+                "The thing locals love that tourists always miss.",
+            ],
+            "Meaning": [
+                f"Support local — {s} is the kind of place worth keeping alive.",
+                f"This is why I love {aud}.",
+            ],
+            "CTA": [cta_text or "Drop a comment if you've been here.", "Tag someone who needs to try this."],
+        }
+
     else:
         # Generic pools using clean subject only
         pools = {
-            "Pattern Interrupt": [f"Let's talk about {s} — quickly."],
-            "Proof": [proof.capitalize() + "." if proof else "Here's what I actually saw."],
-            "Demonstration / Teaching": [mech.capitalize() + "." if mech else f"The core of {s}."],
-            "Meaning": [f"This matters for {aud}."],
-            "CTA": [cta_text or "Follow for part two."],
+            "Pattern Interrupt": [
+                f"Let's talk about {s} — quickly.",
+                f"Here's something about {s} that most people miss.",
+            ],
+            "Proof": [
+                proof.capitalize() + "." if proof else "Here's what I actually saw.",
+                "Real experience. No fluff.",
+            ],
+            "Demonstration / Teaching": [
+                mech.capitalize() + "." if mech else f"The core of {s}.",
+                "Watch closely — this is the part that matters.",
+            ],
+            "Meaning": [
+                f"This matters for {aud}.",
+                f"If you're in {aud}, this is why it's worth your time.",
+            ],
+            "CTA": [
+                cta_text or "Follow for part two.",
+                "Save this — it'll make more sense later.",
+            ],
         }
 
     options = pools.get(section_name, [f"[{section_name}]"])
@@ -1403,8 +1620,14 @@ def _try_local_llm_generation(
         if not ready:
             logger.debug("local LLM not ready: %s", reason)
             return None
-        # Cap wait so offline endpoints fail fast and tests/workflows do not stall
-        cfg["timeout_seconds"] = min(int(cfg.get("timeout_seconds", 120)), 8)
+        # Give generous time for large local models (30B+ can take 60-120s for first token)
+        # Only apply a short cap in test environments
+        import os
+        in_test = os.environ.get("GENESIS_LLM_FAST_TIMEOUT", "")
+        if in_test:
+            cfg["timeout_seconds"] = min(int(cfg.get("timeout_seconds", 120)), 8)
+        else:
+            cfg["timeout_seconds"] = max(int(cfg.get("timeout_seconds", 120)), 120)
 
         prompt = build_social_script_prompt(
             idea=idea, audience=audience, tone=tone,

@@ -266,7 +266,82 @@ def generate_local_text(
             "text": "", "backend": backend, "model": model,
         }
 
+    text = _repair_json_response(text)
     return {"success": True, "text": text, "backend": backend, "model": model}
+
+
+# ---------------------------------------------------------------------------
+# JSON repair — handles truncated / markdown-wrapped responses
+# ---------------------------------------------------------------------------
+
+def _repair_json_response(text: str) -> str:
+    """
+    Attempt to repair common LLM JSON output issues:
+      1. Strip markdown code fences (```json ... ```)
+      2. Return as-is if already valid
+      3. Auto-close truncated JSON objects and arrays
+    Returns the repaired string, or the original if repair fails.
+    """
+    import re
+    import json as _json
+
+    cleaned = text.strip()
+
+    # Strip markdown fences
+    fence_match = re.search(r"```(?:json)?\s*([\s\S]+?)```", cleaned)
+    if fence_match:
+        cleaned = fence_match.group(1).strip()
+    elif cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?", "", cleaned).strip().rstrip("`").strip()
+
+    # Already valid
+    try:
+        _json.loads(cleaned)
+        return cleaned
+    except _json.JSONDecodeError:
+        pass
+
+    # Auto-close truncated JSON by tracking open braces/brackets and strings
+    repaired = _auto_close_json(cleaned)
+    try:
+        _json.loads(repaired)
+        logger.debug("JSON auto-repair succeeded (%d → %d chars)", len(cleaned), len(repaired))
+        return repaired
+    except _json.JSONDecodeError:
+        pass
+
+    return cleaned  # return best-effort cleaned text even if not valid JSON
+
+
+def _auto_close_json(s: str) -> str:
+    """Close any unclosed JSON brackets/braces/strings in a truncated response."""
+    stack = []
+    in_string = False
+    escape_next = False
+
+    for ch in s:
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == "\\" and in_string:
+            escape_next = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+        elif ch in "}]":
+            if stack and stack[-1] == ch:
+                stack.pop()
+
+    closing = ""
+    if in_string:
+        closing += '"'
+    closing += "".join(reversed(stack))
+    return s + closing
 
 
 # ---------------------------------------------------------------------------

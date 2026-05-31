@@ -101,6 +101,7 @@ def _ensure_card_png(
                 caption_text="",
                 style=preset.scene_card_style,
                 size=size,
+                scene_index=0,
             )
         return render_title_card(
             png_path,
@@ -136,9 +137,9 @@ def _ensure_card_png(
             style=preset.scene_card_style,
             size=size,
             content_format=ctx.content_format,
+            scene_index=scene_index,
         )
 
-    color = _SCENE_COLORS[scene_index % len(_SCENE_COLORS)]
     return render_placeholder_card(
         png_path,
         scene_id=item.scene_id,
@@ -147,6 +148,7 @@ def _ensure_card_png(
         caption_text=narr,
         style=preset.scene_card_style,
         size=size,
+        scene_index=scene_index,
     )
 
 

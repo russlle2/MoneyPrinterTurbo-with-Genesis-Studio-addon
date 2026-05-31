@@ -3,12 +3,70 @@
 This guide covers the complete daily workflow for creating, checking, and exporting
 short-form videos with Genesis Studio.
 
-**Baseline:** After Phase 28, all core features are production-ready. Stop feature-building
+**Baseline:** After Phase 28.1, all core features are production-ready. Stop feature-building
 and use Genesis for real production testing.
 
 ---
 
-## Open the Genesis Interface
+## Easiest Way: Use the Creator UI
+
+No terminal commands needed. Just open the browser-based creator interface:
+
+```bash
+python -m genesis.ui.launch_ui
+```
+
+The UI opens automatically in your browser at `http://localhost:8501`.
+
+**Aliases — the same UI from other entry points:**
+
+```bash
+python -m genesis.creator.creator_cli ui
+python -m genesis.dashboard.dashboard_cli creator-ui
+```
+
+### How to Create a Video With the UI
+
+1. **Enter your video idea** — Type your concept in the large text box ("Video idea / concept")
+2. **Choose a template** — Pick from `tutorial`, `affiliate_product`, `wellness_teaching`, and more
+3. **Upload clips / images** — Drag-and-drop video clips or images in the Uploads section
+4. **Pick platform and style** — Select your target platform (TikTok, Instagram Reels, etc.) and brand style
+5. **Toggle options** — Enable narration, AI visual fill, thumbnail selection, quality check, and export package as needed
+6. **Click Create Video** — The pipeline runs automatically; progress is shown in the output area
+7. **Preview the draft video** — The video player appears inline when rendering completes
+8. **Review the quality badge** — Green = READY_TO_POST, orange = NEEDS_REVIEW, red = NOT_READY
+9. **Export the package** — Click the Export tab; use "Export Package" to build the platform-ready folder
+10. **Open the dashboard** — Click the Dashboard tab → "Open Dashboard" to see all your runs
+
+### UI Tabs at a Glance
+
+| Tab | Purpose |
+|-----|---------|
+| ✏️ Create Video | Full pipeline: idea → script → visuals → render → export |
+| 🖼️ Media & Visuals | Add clips, manual AI visuals, run fill/match on existing job |
+| 👁️ Review | Load any run: preview video, script, captions, thumbnail, quality |
+| 📦 Export | Build platform-ready export package, copy captions/hashtags |
+| 📊 Dashboard | Build/open the static dashboard, see all runs at a glance |
+
+### What Each Toggle Does
+
+| Toggle | Effect |
+|--------|--------|
+| Generate narration | Sends script to ElevenLabs (requires API key in config) |
+| Use local LLM | Routes script generation to local model if available |
+| AI visual fill | Generates missing scene visuals via prompt cards |
+| Import manual visuals | Ingests Diffus.me / Midjourney exports from run folder |
+| Select thumbnail | Scores and picks the best thumbnail candidate |
+| Run quality check | Scores the run and produces a readiness badge |
+| Strict quality check | Fails if any blocking issue is found |
+| Export package | Bundles MP4, caption, hashtags, thumbnail, checklist |
+| Use music bed | Mixes background music at low volume |
+| Enable transitions | Adds cross-fade transitions between scenes |
+| Enable motion effects | Adds subtle pan/zoom on still images |
+
+---
+
+## Open the Genesis Interface (Static Dashboard)
 
 Build and open the local dashboard in your browser:
 

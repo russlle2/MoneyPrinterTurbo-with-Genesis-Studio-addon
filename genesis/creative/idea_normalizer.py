@@ -28,6 +28,29 @@ _NARRATIVE_PREFIXES = re.compile(
     re.IGNORECASE,
 )
 
+# Meta "make a video" framing to strip so the real topic survives.
+# e.g. "a short video motivating people to be kind" -> "be kind",
+#      "make a video about saving rescue dogs" -> "saving rescue dogs".
+_META_VIDEO_PREFIX = re.compile(
+    r"^(?:please\s+|can\s+you\s+|i\s+(?:want|need|would\s+like)\s+(?:you\s+to\s+)?)?"
+    r"(?:make|create|generate|produce|build|do|give\s+me|film|shoot)?\s*"
+    r"(?:me\s+)?(?:a|an|the)?\s*"
+    r"(?:short|quick|simple|nice|cool|fun|cute|epic|cinematic|viral|\d+\s*(?:second|sec|s|minute|min)s?)?\s*"
+    r"(?:video|clip|reel|short|tiktok|montage|ad|advert|advertisement|story)\s+"
+    r"(?:that\s+|which\s+|to\s+)?"
+    r"(?:is\s+about|about|of|on|showing|that\s+shows?|featuring|depicting|"
+    r"motivating|encouraging|inspiring|teaching|explaining|promoting|highlighting)\s+"
+    r"(?:people\s+(?:to|that|how\s+to)\s+|viewers\s+(?:to|how\s+to)\s+|the\s+audience\s+to\s+|us\s+to\s+)?",
+    re.IGNORECASE,
+)
+
+# Trailing creator-direction clauses (style notes) to drop from the topic phrase.
+_TRAILING_DIRECTION = re.compile(
+    r"[\.,;]?\s*(?:and\s+)?(?:please\s+)?(?:use|with|in|using|make\s+it|keep\s+it|"
+    r"add|include|show\s+scenes?\s+of)\b.*$",
+    re.IGNORECASE,
+)
+
 # Trailing clauses to drop
 _TRAILING_CLAUSE = re.compile(
     r"\s+(?:that|which|because|and)\s+(?:went\s+viral|got\s+viral|is\s+viral|blows?\s+up|trending).*$",
@@ -148,6 +171,7 @@ class NormalizedIdeaContext:
 def clean_topic_phrase(text: str) -> str:
     """Remove narrative noise and trailing viral clauses; collapse whitespace."""
     t = text.strip()
+    t = _META_VIDEO_PREFIX.sub("", t)
     t = _NARRATIVE_PREFIXES.sub("", t)
     t = _TRAILING_CLAUSE.sub("", t)
     t = re.sub(r"\s+", " ", t).strip()
@@ -234,6 +258,43 @@ def infer_product_context(
             benefits = ["worth a closer look", "easy to explain in 30 seconds"]
 
     return product_type, mechanism, benefits
+
+
+def extract_narrative_first_sentence(idea: str) -> str:
+    """Extract the first meaningful sentence from a long narrative idea."""
+    raw = idea.strip()
+    # Split on sentence-ending punctuation
+    for sep in (". ", ".\n", "! ", "? ", "!\n", "?\n"):
+        parts = raw.split(sep, 1)
+        if len(parts) == 2:
+            first = parts[0].strip() + sep.strip()
+            if 10 < len(first) < 200:
+                return first
+    # Fallback: first 120 chars, end at last word boundary
+    if len(raw) > 120:
+        cut = raw[:120].rsplit(" ", 1)[0]
+        return cut + "…"
+    return raw
+
+
+def is_narrative_idea(idea: str, content_format: str = "") -> bool:
+    """Return True if the idea is a long personal/narrative concept (not a product demo)."""
+    narrative_formats = {
+        "personal_story", "motivational_walkthrough", "controversial_take",
+        "fundraising_story",
+    }
+    if content_format in narrative_formats:
+        return True
+    words = idea.split()
+    if len(words) < 10:
+        return False
+    personal_markers = re.compile(
+        r"\b(i want|i am|i'm|my life|my journey|my van|my story|driving|across the country|"
+        r"change the world|one good deed|meet people|share|inspire|real story|true story|"
+        r"emotional|cinematic|ai generated visuals|ai visuals)\b",
+        re.I,
+    )
+    return bool(personal_markers.search(idea))
 
 
 def infer_proof_point(idea: str, content_goal: str = "") -> str:

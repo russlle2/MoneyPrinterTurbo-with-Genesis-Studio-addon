@@ -10,6 +10,7 @@ Supported backends:
 
 from __future__ import annotations
 
+import os
 from typing import Any
 
 from genesis.utils.logger import get_logger
@@ -17,6 +18,24 @@ from genesis.utils.logger import get_logger
 logger = get_logger("voice_provider")
 
 _SUPPORTED_BACKENDS: tuple[str, ...] = ("elevenlabs",)
+
+
+class VoiceoverDisabledError(RuntimeError):
+    """Raised when voiceover synthesis is attempted while globally disabled."""
+
+
+def voiceover_enabled() -> bool:
+    """
+    Global kill switch for paid voiceover (ElevenLabs) synthesis.
+
+    Voiceover is DISABLED by default so no API tokens are ever spent unless
+    explicitly re-enabled via the ``GENESIS_ENABLE_VOICEOVER`` environment
+    variable (set to 1/true/yes/on). This is intentional: the project owner
+    paused voiceover/captions after wasted spend on garbled output.
+    """
+    return os.environ.get("GENESIS_ENABLE_VOICEOVER", "").strip().lower() in (
+        "1", "true", "yes", "on",
+    )
 
 
 def generate_voice(
@@ -43,7 +62,14 @@ def generate_voice(
 
     Raises:
         RuntimeError: If the backend is unknown or not configured.
+        VoiceoverDisabledError: If voiceover is globally disabled (default).
     """
+    if not voiceover_enabled():
+        raise VoiceoverDisabledError(
+            "Voiceover is temporarily disabled (no API tokens will be spent). "
+            "Set GENESIS_ENABLE_VOICEOVER=1 to re-enable."
+        )
+
     if backend == "elevenlabs":
         from genesis.integrations.elevenlabs_client import synthesize_voice
         return synthesize_voice(text, voice_id=voice_id, output_path=output_path, **kwargs)
@@ -61,6 +87,12 @@ def voice_backend_ready(backend: str = "elevenlabs") -> tuple[bool, str]:
     Returns:
         (True, "") if ready, or (False, reason_message) if not.
     """
+    if not voiceover_enabled():
+        return False, (
+            "Voiceover temporarily disabled (no tokens spent). "
+            "Set GENESIS_ENABLE_VOICEOVER=1 to re-enable."
+        )
+
     if backend == "elevenlabs":
         from genesis.utils.config_loader import elevenlabs_ready
         return elevenlabs_ready()

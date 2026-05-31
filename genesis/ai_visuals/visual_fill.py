@@ -155,6 +155,8 @@ def run_visual_fill_for_run(
     cfg = load_ai_visuals_config()
     if asset_type:
         cfg = {**cfg, "default_asset_type": asset_type}
+    # Forward brand/content context so providers (e.g. Pollinations) apply correct style
+    cfg = {**cfg, "brand_preset": brand_preset, "content_format": content_format}
 
     warnings: list[str] = []
     if not run_dir.is_dir():

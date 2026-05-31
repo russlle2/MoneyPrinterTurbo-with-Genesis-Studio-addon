@@ -133,6 +133,8 @@ def _placeholder_script_from_idea(
 def _generate_script_with_engine(
     brief: SocialContentBrief,
     content_format: str,
+    *,
+    llm_config: dict[str, Any] | None = None,
 ) -> tuple[str, str, Any]:
     """
     Call the Phase 12 script engine for a full ScriptPackage.
@@ -153,6 +155,7 @@ def _generate_script_with_engine(
             cta=brief.cta,
             content_format=content_format,
             platforms=brief.platforms,
+            llm_config=llm_config,
         )
         script_text = pkg.primary_script.full_text or pkg.primary_script.title
         logger.info(
@@ -612,6 +615,8 @@ def run_social_media_workflow(
     content_format: str = "product_demo",
     write_package: bool = True,
     narration_kwargs: dict[str, Any] | None = None,
+    llm_config: dict[str, Any] | None = None,
+    use_local_llm: bool = False,
 ) -> SocialWorkflowResult:
     """
     Run the full social media content workflow from idea to posting package.
@@ -652,6 +657,19 @@ def run_social_media_workflow(
     )
 
     # Step 2 — script
+    # If use_local_llm is requested, build a force-enabled config overlay
+    effective_llm_config = llm_config
+    if use_local_llm and llm_config is None:
+        try:
+            from genesis.integrations.local_llm_provider import load_local_llm_config
+            base = dict(load_local_llm_config())
+            if not base.get("enabled"):
+                base["enabled"] = True
+                logger.info("job=%s: use_local_llm requested — force-enabling local LLM", run_id)
+            effective_llm_config = base
+        except Exception:  # noqa: BLE001
+            pass
+
     script_package = None
     if script_text and script_text.strip():
         final_script = script_text.strip()
@@ -659,7 +677,7 @@ def run_social_media_workflow(
         logger.info("job=%s: using provided script (%d chars)", run_id, len(final_script))
     else:
         final_script, script_source, script_package = _generate_script_with_engine(
-            brief, content_format
+            brief, content_format, llm_config=effective_llm_config,
         )
         if script_source == "placeholder":
             errors.append("script engine unavailable — placeholder script used")

@@ -138,6 +138,15 @@ def cmd_summary(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_creator_ui(args: argparse.Namespace) -> int:
+    """Launch the Genesis Studio Creator UI."""
+    from genesis.ui.launch_ui import launch
+    port = getattr(args, "port", 8501) or 8501
+    no_browser = getattr(args, "no_browser", False)
+    launch(port=port, open_browser=not no_browser)
+    return 0
+
+
 def cmd_thumbnails(args: argparse.Namespace) -> int:
     runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else _RUNS_BASE
     thumb_dir = _DASHBOARD_DIR / "thumbnails"
@@ -175,6 +184,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("open", help="Build dashboard and open in default browser")
     sub.add_parser("open-path", help="Print dashboard index.html path")
 
+    cui = sub.add_parser("creator-ui", help="Launch Genesis Studio Creator UI")
+    cui.add_argument("--port", type=int, default=8501)
+    cui.add_argument("--no-browser", action="store_true")
+
     s = sub.add_parser("summary", help="Print summary counts")
     s.add_argument("--refresh", action="store_true")
 
@@ -192,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         "open-path": cmd_open_path,
         "summary": cmd_summary,
         "thumbnails": cmd_thumbnails,
+        "creator-ui": _cmd_creator_ui,
     }
     if not args.command:
         parser.print_help()

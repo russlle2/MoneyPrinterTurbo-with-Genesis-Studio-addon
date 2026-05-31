@@ -18,3 +18,7 @@ requests==2.33.1
 socksio==1.0.0
 pydub==0.25.1
 litellm==1.60.0
+# Genesis Forge: image animation + video assembly (Ken Burns, upscaling, transitions)
+opencv-python-headless==4.13.0.92
+imageio==2.37.3
+imageio-ffmpeg==0.6.0

@@ -35,6 +35,16 @@ test_*.py
 !test/services/test_*.py
 streamlit.log
 
+# Throwaway / experimental scratch scripts at repo root
+/_*.py
+/Modelfile
+
+# Generated run/output artifacts
+assets/forge_output/
+assets/batches/
+assets/runs/
+exports/
+
 # Genesis Studio
 genesis/config/*.json
 !genesis/config/example*.json

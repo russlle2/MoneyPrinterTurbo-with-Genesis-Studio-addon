@@ -278,7 +278,20 @@ def build_parser() -> argparse.ArgumentParser:
     st = sub.add_parser("status", help="Show run status")
     st.add_argument("job_id")
 
+    ui_p = sub.add_parser("ui", help="Launch Genesis Studio Creator UI")
+    ui_p.add_argument("--port", type=int, default=8501)
+    ui_p.add_argument("--no-browser", action="store_true")
+
     return p
+
+
+def cmd_ui(args: argparse.Namespace) -> int:
+    """Launch the Genesis Studio Creator UI."""
+    from genesis.ui.launch_ui import launch
+    port = getattr(args, "port", 8501) or 8501
+    no_browser = getattr(args, "no_browser", False)
+    launch(port=port, open_browser=not no_browser)
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -290,6 +303,7 @@ def main(argv: list[str] | None = None) -> int:
         "template-info": cmd_template_info,
         "rerender": cmd_rerender,
         "status": cmd_status,
+        "ui": cmd_ui,
     }
     if not args.command:
         parser.print_help()
