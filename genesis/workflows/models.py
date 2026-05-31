@@ -208,6 +208,10 @@ class PostingPackage:
     narration_path: str = ""
     script_package_path: str = ""
     overlay_captions_path: str = ""
+    storyboard_path: str = ""
+    shot_plan_path: str = ""
+    visual_prompts_path: str = ""
+    filming_checklist_path: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -221,6 +225,10 @@ class PostingPackage:
             "narration_path": self.narration_path,
             "script_package_path": self.script_package_path,
             "overlay_captions_path": self.overlay_captions_path,
+            "storyboard_path": self.storyboard_path,
+            "shot_plan_path": self.shot_plan_path,
+            "visual_prompts_path": self.visual_prompts_path,
+            "filming_checklist_path": self.filming_checklist_path,
         }
 
     def to_json(self, *, indent: int = 2) -> str:
@@ -238,6 +246,7 @@ class SocialWorkflowResult:
     script_source: str = ""  # "provided" | "local_llm" | "template_fallback" | "placeholder"
     script_package: Any = None  # ScriptPackage | None (avoid import cycle)
     metadata_package: Any = None  # MetadataPackage | None (avoid import cycle)
+    storyboard_package: Any = None  # StoryboardPackage | None (avoid import cycle)
     narration: GeneratedAssetReference | None = None
     platform_metadata: list[PlatformMetadata] = field(default_factory=list)
     posting_package: PostingPackage | None = None
@@ -261,6 +270,12 @@ class SocialWorkflowResult:
                 self.metadata_package.to_dict()
                 if self.metadata_package is not None
                 and hasattr(self.metadata_package, "to_dict")
+                else None
+            ),
+            "storyboard_package": (
+                self.storyboard_package.to_dict()
+                if self.storyboard_package is not None
+                and hasattr(self.storyboard_package, "to_dict")
                 else None
             ),
             "narration": self.narration.to_dict() if self.narration else None,

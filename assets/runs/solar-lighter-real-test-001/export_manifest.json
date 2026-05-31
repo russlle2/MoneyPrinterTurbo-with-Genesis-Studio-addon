@@ -1,0 +1,28 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "generated_at": "2026-05-30T21:33:11.704864+00:00",
+  "status": "complete",
+  "renderer": "moviepy",
+  "target_platform": "tiktok",
+  "created_files": [
+    "timeline.json",
+    "caption_timing.json",
+    "render_notes.md",
+    "draft_video.mp4"
+  ],
+  "source_package": {
+    "brief": "brief.json",
+    "script_package": "script_package.json",
+    "storyboard": "storyboard.json",
+    "overlay_captions": "overlay_captions.json",
+    "metadata_pack": "metadata_pack.json"
+  },
+  "narration_path": "assets\\audio\\narration_solar-lighter-real-test-001.mp3",
+  "video_output": "assets\\runs\\solar-lighter-real-test-001\\draft_video.mp4",
+  "timeline_path": "timeline.json",
+  "caption_timing_path": "caption_timing.json",
+  "warnings": [],
+  "notes": [
+    "Draft vertical MP4 rendered locally."
+  ]
+}

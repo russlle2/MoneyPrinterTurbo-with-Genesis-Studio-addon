@@ -1,0 +1,349 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "aspect_ratio": "9:16",
+  "resolution": "1080x1920",
+  "fps": 30,
+  "duration": 30.22,
+  "clips": [
+    {
+      "clip_id": "clip_title",
+      "scene_id": "title",
+      "source_path": "",
+      "media_type": "title_card",
+      "start_time": 0.0,
+      "duration": 1.0,
+      "visual_role": "title",
+      "crop_mode": "cover",
+      "caption_text": "People kept asking where to buy this Solar-powered lighter.",
+      "notes": "auto title card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_scene_01",
+      "scene_id": "scene_01",
+      "source_path": "assets\\runs\\solar-lighter-real-test-001\\render_cache\\scene_01_placeholder.png",
+      "media_type": "placeholder",
+      "start_time": 1.0,
+      "duration": 4.4,
+      "visual_role": "scene",
+      "crop_mode": "cover",
+      "caption_text": "People kept asking where to buy this Solar-powered lighter.",
+      "notes": "generated placeholder card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_scene_02",
+      "scene_id": "scene_02",
+      "source_path": "assets\\runs\\solar-lighter-real-test-001\\render_cache\\scene_02_placeholder.png",
+      "media_type": "placeholder",
+      "start_time": 5.4,
+      "duration": 4.84,
+      "visual_role": "scene",
+      "crop_mode": "cover",
+      "caption_text": "The video went viral",
+      "notes": "generated placeholder card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_scene_03",
+      "scene_id": "scene_03",
+      "source_path": "assets\\runs\\solar-lighter-real-test-001\\render_cache\\scene_03_placeholder.png",
+      "media_type": "placeholder",
+      "start_time": 10.24,
+      "duration": 4.84,
+      "visual_role": "scene",
+      "crop_mode": "cover",
+      "caption_text": "No fuel",
+      "notes": "generated placeholder card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_scene_04",
+      "scene_id": "scene_04",
+      "source_path": "assets\\runs\\solar-lighter-real-test-001\\render_cache\\scene_04_placeholder.png",
+      "media_type": "placeholder",
+      "start_time": 15.08,
+      "duration": 8.36,
+      "visual_role": "scene",
+      "crop_mode": "cover",
+      "caption_text": "Comment SOLAR and check the pinned link",
+      "notes": "generated placeholder card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_scene_05",
+      "scene_id": "scene_05",
+      "source_path": "assets\\runs\\solar-lighter-real-test-001\\render_cache\\scene_05_placeholder.png",
+      "media_type": "placeholder",
+      "start_time": 23.44,
+      "duration": 5.28,
+      "visual_role": "scene",
+      "crop_mode": "cover",
+      "caption_text": "Comment SOLAR and check the pinned link",
+      "notes": "generated placeholder card",
+      "warnings": []
+    },
+    {
+      "clip_id": "clip_end",
+      "scene_id": "end",
+      "source_path": "",
+      "media_type": "end_card",
+      "start_time": 28.72,
+      "duration": 1.5,
+      "visual_role": "cta",
+      "crop_mode": "cover",
+      "caption_text": "Comment SOLAR and check the pinned link",
+      "notes": "auto end card",
+      "warnings": []
+    }
+  ],
+  "audio_tracks": [
+    {
+      "source_path": "assets\\audio\\narration_solar-lighter-real-test-001.mp3",
+      "start_time": 1.0,
+      "duration": 30.22,
+      "audio_role": "narration",
+      "volume": 1.0,
+      "notes": ""
+    }
+  ],
+  "captions": [
+    {
+      "cue_id": "cue_scene_01_01",
+      "scene_id": "scene_01",
+      "text": "People kept asking where to buy this Solar-powered lighter.",
+      "start_time": 1.0,
+      "end_time": 5.4,
+      "placement": "bottom_safe",
+      "style": "default",
+      "warnings": []
+    },
+    {
+      "cue_id": "cue_scene_02_01",
+      "scene_id": "scene_02",
+      "text": "The video went viral",
+      "start_time": 5.4,
+      "end_time": 10.24,
+      "placement": "bottom_safe",
+      "style": "default",
+      "warnings": []
+    },
+    {
+      "cue_id": "cue_scene_03_01",
+      "scene_id": "scene_03",
+      "text": "No fuel",
+      "start_time": 10.24,
+      "end_time": 15.08,
+      "placement": "bottom_safe",
+      "style": "default",
+      "warnings": []
+    },
+    {
+      "cue_id": "cue_scene_04_01",
+      "scene_id": "scene_04",
+      "text": "Comment SOLAR and check the pinned link",
+      "start_time": 15.08,
+      "end_time": 23.44,
+      "placement": "bottom_safe",
+      "style": "default",
+      "warnings": []
+    },
+    {
+      "cue_id": "cue_scene_05_01",
+      "scene_id": "scene_05",
+      "text": "Check the pinned comment \u2014 link will be marked if it's affiliate.",
+      "start_time": 23.44,
+      "end_time": 28.72,
+      "placement": "bottom_safe",
+      "style": "default",
+      "warnings": []
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": "scene_01",
+      "section_name": "Pattern Interrupt",
+      "narration_text": "People kept asking where to buy this Solar-powered lighter.",
+      "visual_goal": "Open with primary hook energy. Stop the scroll with a close-up product moment.",
+      "shot_type": "product_closeup",
+      "camera_direction": "Vertical 9:16, tight close-up, product centered, shallow depth of field.",
+      "subject_action": "Frame Solar-powered lighter clearly; show key feature in first second.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "macro detail of key feature",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "People kept asking where to buy this Solar-powered lighter.",
+      "timing_hint": "0\u20132s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Quick cut within first second; caption punch-in optional",
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_02",
+      "section_name": "Proof",
+      "narration_text": "The video went viral \u2014 so people had reason to pay attention.",
+      "visual_goal": "Show buyer interest, comments, or social proof (film separately).",
+      "shot_type": "proof_screenshot",
+      "camera_direction": "Vertical 9:16, screen recording or filmed phone screen \u2014 readable text.",
+      "subject_action": "Capture proof UI or comments as a separate insert.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "The video went viral",
+      "timing_hint": "3\u20136s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions",
+        "Blur personal info if needed before publish"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_03",
+      "section_name": "Demonstration / Teaching",
+      "narration_text": "This is the part people replay: a short on-camera moment.",
+      "visual_goal": "Demonstrate the product in real use.",
+      "shot_type": "hand_demonstration",
+      "camera_direction": "Vertical 9:16, hands and product in frame, stable tripod or slow push-in.",
+      "subject_action": "Demonstrate Solar-powered lighter in one continuous action \u2014 hands in frame.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "No fuel",
+      "timing_hint": "7\u201320s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_04",
+      "section_name": "Meaning",
+      "narration_text": "If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.",
+      "visual_goal": "Connect emotionally or explain why this matters. Narration: If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly .",
+      "shot_type": "talking_head",
+      "camera_direction": "Vertical 9:16, eye-level, creator on camera.",
+      "subject_action": "Perform the action that matches: Meaning.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "end",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_05",
+      "section_name": "CTA",
+      "narration_text": "Check the pinned comment \u2014 link will be marked if it's affiliate.",
+      "visual_goal": "Pinned comment / keyword CTA \u2014 film CTA clip separately.",
+      "shot_type": "text_overlay",
+      "camera_direction": "Vertical 9:16, static or subtle motion; leave lower-third safe for captions.",
+      "subject_action": "Film a dedicated CTA beat \u2014 point to comment, bio, or support link placeholder.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "section 5/5",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions",
+        "Hold CTA frame 2\u20133 seconds minimum"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    }
+  ],
+  "status": "complete",
+  "warnings": [],
+  "notes": [
+    "target_platform=tiktok",
+    "placeholders=5"
+  ]
+}

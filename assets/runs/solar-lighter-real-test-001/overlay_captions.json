@@ -1,0 +1,25 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "captions": [
+    {
+      "text": "People kept asking where to buy this Solar-powered lighter.",
+      "timing_hint": "0\u20132s",
+      "purpose": "Stop the scroll \u2014 mirror spoken hook"
+    },
+    {
+      "text": "The video went viral",
+      "timing_hint": "3\u20136s",
+      "purpose": "Reinforce credibility"
+    },
+    {
+      "text": "No fuel",
+      "timing_hint": "7\u201320s",
+      "purpose": "Annotate key action"
+    },
+    {
+      "text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "end",
+      "purpose": "Repeat CTA on screen"
+    }
+  ]
+}

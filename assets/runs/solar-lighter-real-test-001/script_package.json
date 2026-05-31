@@ -1,0 +1,192 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "idea": "My girlfriend demonstrates a solar-powered lighter that went viral",
+  "audience": "outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers",
+  "tone": "curious, practical, viral",
+  "content_goal": "affiliate follow-up",
+  "offer": "",
+  "content_format": "affiliate_followup",
+  "hooks": [
+    {
+      "text": "People kept asking where to buy this Solar-powered lighter.",
+      "style": "curiosity",
+      "reason": "Buyer-interest without claiming a live code.",
+      "score": 0.9
+    },
+    {
+      "text": "No fuel. No battery.",
+      "style": "practical",
+      "reason": "Lead with concrete benefits.",
+      "score": 0.86
+    },
+    {
+      "text": "This Solar-powered lighter got attention because people thought it was fake.",
+      "style": "proof_based",
+      "reason": "Borrow viral proof without inventing view counts.",
+      "score": 0.82
+    },
+    {
+      "text": "This little Solar-powered lighter looks fake until you see it work.",
+      "style": "shock",
+      "reason": "Pattern interrupt with scepticism.",
+      "score": 0.66
+    },
+    {
+      "text": "I'm trying to get the official link for this Solar-powered lighter.",
+      "style": "story_open_loop",
+      "reason": "Honest uncertainty about link status.",
+      "score": 0.74
+    }
+  ],
+  "primary_script": {
+    "title": "Solar-powered lighter \u2014 Hook Version",
+    "duration_target": "30s",
+    "platform_fit": [
+      "clapper",
+      "tiktok",
+      "instagram_reels",
+      "youtube_shorts",
+      "x"
+    ],
+    "sections": [
+      {
+        "name": "Pattern Interrupt",
+        "text": "Everyone's asking about Solar-powered lighter. Here's what the viral video didn't show.",
+        "purpose": "Stop the scroll \u2014 grab immediate attention"
+      },
+      {
+        "name": "Proof",
+        "text": "The video went viral \u2014 so people had reason to pay attention.",
+        "purpose": "Establish credibility and trust"
+      },
+      {
+        "name": "Demonstration / Teaching",
+        "text": "This is the part people replay: a short on-camera moment.",
+        "purpose": "Deliver the core value"
+      },
+      {
+        "name": "Meaning",
+        "text": "If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.",
+        "purpose": "Create emotional resonance \u2014 explain why it matters"
+      },
+      {
+        "name": "CTA",
+        "text": "Check the pinned comment \u2014 link will be marked if it's affiliate.",
+        "purpose": "Single, clear next action"
+      }
+    ],
+    "full_text": "Everyone's asking about Solar-powered lighter. Here's what the viral video didn't show.\n\nThe video went viral \u2014 so people had reason to pay attention.\n\nThis is the part people replay: a short on-camera moment.\n\nIf you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.\n\nCheck the pinned comment \u2014 link will be marked if it's affiliate."
+  },
+  "alternate_scripts": [
+    {
+      "title": "Solar-powered lighter \u2014 Short Cut",
+      "duration_target": "15s",
+      "platform_fit": [
+        "clapper",
+        "tiktok",
+        "instagram_reels",
+        "youtube_shorts",
+        "x"
+      ],
+      "sections": [
+        {
+          "name": "Pattern Interrupt",
+          "text": "Everyone's asking about Solar-powered lighter. Here's what the viral video didn't show.",
+          "purpose": "Stop the scroll \u2014 grab immediate attention"
+        },
+        {
+          "name": "Proof",
+          "text": "The video went viral \u2014 so people had reason to pay attention.",
+          "purpose": "Establish credibility and trust"
+        },
+        {
+          "name": "Demonstration / Teaching",
+          "text": "This is the part people replay: a short on-camera moment.",
+          "purpose": "Deliver the core value"
+        },
+        {
+          "name": "Meaning",
+          "text": "If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.",
+          "purpose": "Create emotional resonance \u2014 explain why it matters"
+        },
+        {
+          "name": "CTA",
+          "text": "Comment SOLAR and check the pinned link",
+          "purpose": "Single, clear next action"
+        }
+      ],
+      "full_text": "Everyone's asking about Solar-powered lighter. Here's what the viral video didn't show.\n\nThe video went viral \u2014 so people had reason to pay attention.\n\nThis is the part people replay: a short on-camera moment.\n\nIf you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.\n\nComment SOLAR and check the pinned link"
+    }
+  ],
+  "overlay_captions": [
+    {
+      "text": "People kept asking where to buy this Solar-powered lighter.",
+      "timing_hint": "0\u20132s",
+      "purpose": "Stop the scroll \u2014 mirror spoken hook"
+    },
+    {
+      "text": "The video went viral",
+      "timing_hint": "3\u20136s",
+      "purpose": "Reinforce credibility"
+    },
+    {
+      "text": "No fuel",
+      "timing_hint": "7\u201320s",
+      "purpose": "Annotate key action"
+    },
+    {
+      "text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "end",
+      "purpose": "Repeat CTA on screen"
+    }
+  ],
+  "cta_options": [
+    {
+      "text": "Comment SOLAR and check the pinned link",
+      "type": "custom",
+      "platform_fit": [
+        "clapper",
+        "tiktok",
+        "instagram_reels",
+        "youtube_shorts",
+        "x"
+      ]
+    },
+    {
+      "text": "Comment SOLAR and I'll send you the link when it's ready.",
+      "type": "comment_keyword",
+      "platform_fit": [
+        "tiktok",
+        "clapper"
+      ]
+    },
+    {
+      "text": "Check the pinned comment for the official link.",
+      "type": "pinned_comment",
+      "platform_fit": [
+        "tiktok",
+        "instagram_reels"
+      ]
+    },
+    {
+      "text": "If I get a code from the company, I'll pin it here.",
+      "type": "comment_engage",
+      "platform_fit": [
+        "clapper",
+        "tiktok",
+        "instagram_reels",
+        "youtube_shorts",
+        "x"
+      ]
+    }
+  ],
+  "notes": [
+    "Reference the original viral moment to borrow credibility.",
+    "Include any required FTC disclosure: 'Link may be affiliate'."
+  ],
+  "status": "complete",
+  "script_source": "template_fallback",
+  "llm_backend": null,
+  "llm_model": null,
+  "fallback_reason": null
+}

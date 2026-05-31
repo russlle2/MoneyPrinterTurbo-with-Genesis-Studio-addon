@@ -1,0 +1,433 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "idea": "My girlfriend demonstrates a solar-powered lighter that went viral",
+  "content_format": "affiliate_followup",
+  "content_goal": "affiliate follow-up",
+  "platforms": [
+    "clapper",
+    "tiktok",
+    "instagram_reels",
+    "youtube_shorts",
+    "x"
+  ],
+  "primary_hook": "People kept asking where to buy this Solar-powered lighter.",
+  "metadata_by_platform": {
+    "clapper": {
+      "platform": "clapper",
+      "title": null,
+      "caption": "People kept asking where to buy this Solar-powered lighter.\nuses sunlight instead of fuel or batteries.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "description": null,
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "tags": [],
+      "pinned_comment": "Comment SOLAR and check the pinned link",
+      "cta": "Comment SOLAR and check the pinned link",
+      "disclosure": {
+        "required": true,
+        "disclosure_type": "affiliate",
+        "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+        "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+        "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+      },
+      "overlay_caption_notes": [
+        "People kept asking where to buy this Solar-powered lighter. (0\u20132s)",
+        "The video went viral (3\u20136s)",
+        "No fuel (7\u201320s)",
+        "Comment SOLAR and check the pinned link (end)"
+      ],
+      "posting_notes": [
+        "Narration uses ElevenLabs voice (internal note).",
+        "Clapper: keep captions tight and conversational."
+      ],
+      "warnings": []
+    },
+    "tiktok": {
+      "platform": "tiktok",
+      "title": null,
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "description": null,
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "tags": [],
+      "pinned_comment": "Comment SOLAR and check the pinned link",
+      "cta": "Comment SOLAR and check the pinned link",
+      "disclosure": {
+        "required": true,
+        "disclosure_type": "affiliate",
+        "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+        "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+        "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+      },
+      "overlay_caption_notes": [
+        "People kept asking where to buy this Solar-powered lighter. (0\u20132s)",
+        "The video went viral (3\u20136s)",
+        "No fuel (7\u201320s)",
+        "Comment SOLAR and check the pinned link (end)"
+      ],
+      "posting_notes": [
+        "Narration uses ElevenLabs voice (internal note).",
+        "TikTok: shorter captions perform well; use pinned comment for links."
+      ],
+      "warnings": []
+    },
+    "instagram_reels": {
+      "platform": "instagram_reels",
+      "title": null,
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nuses sunlight instead of fuel or batteries.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "description": null,
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "tags": [],
+      "pinned_comment": "Comment SOLAR and check the pinned link",
+      "cta": "Comment SOLAR and check the pinned link",
+      "disclosure": {
+        "required": true,
+        "disclosure_type": "affiliate",
+        "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+        "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+        "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+      },
+      "overlay_caption_notes": [
+        "People kept asking where to buy this Solar-powered lighter. (0\u20132s)",
+        "The video went viral (3\u20136s)",
+        "No fuel (7\u201320s)",
+        "Comment SOLAR and check the pinned link (end)"
+      ],
+      "posting_notes": [
+        "Narration uses ElevenLabs voice (internal note).",
+        "Reels: hook in first line; hashtags often in caption or first comment."
+      ],
+      "warnings": []
+    },
+    "youtube_shorts": {
+      "platform": "youtube_shorts",
+      "title": "Solar-powered lighter",
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.",
+      "description": "People kept asking where to buy this Solar-powered lighter. uses sunlight instead of fuel or batteries. Comment SOLAR and check the pinned link Affiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered"
+      ],
+      "tags": [
+        "solar-powered lighter",
+        "solar powered lighter",
+        "solarpowered lighter",
+        "solar powered lighterr",
+        "solar powered lighte"
+      ],
+      "pinned_comment": "Comment SOLAR and check the pinned link",
+      "cta": "Comment SOLAR and check the pinned link",
+      "disclosure": {
+        "required": true,
+        "disclosure_type": "affiliate",
+        "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+        "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+        "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+      },
+      "overlay_caption_notes": [
+        "People kept asking where to buy this Solar-powered lighter. (0\u20132s)",
+        "The video went viral (3\u20136s)",
+        "No fuel (7\u201320s)",
+        "Comment SOLAR and check the pinned link (end)"
+      ],
+      "posting_notes": [
+        "Narration uses ElevenLabs voice (internal note).",
+        "Shorts: title visible in feed; description for context and links."
+      ],
+      "warnings": []
+    },
+    "x": {
+      "platform": "x",
+      "title": null,
+      "caption": "People kept asking where to buy this Solar-powered lighter. Comment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar",
+      "description": null,
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar"
+      ],
+      "tags": [],
+      "pinned_comment": null,
+      "cta": "Comment SOLAR and check the pinned link",
+      "disclosure": {
+        "required": true,
+        "disclosure_type": "affiliate",
+        "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+        "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+        "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+      },
+      "overlay_caption_notes": [
+        "People kept asking where to buy this Solar-powered lighter. (0\u20132s)",
+        "The video went viral (3\u20136s)",
+        "No fuel (7\u201320s)",
+        "Comment SOLAR and check the pinned link (end)"
+      ],
+      "posting_notes": [
+        "Narration uses ElevenLabs voice (internal note).",
+        "X: one strong sentence; minimal hashtags."
+      ],
+      "warnings": []
+    }
+  },
+  "hashtag_sets": {
+    "clapper": {
+      "primary": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter"
+      ],
+      "niche": [
+        "#UsefulGadgets",
+        "#OutdoorGear",
+        "#SurvivalGadget",
+        "#EcoGadget",
+        "#ProductDemo",
+        "#GearReview",
+        "#WorthIt",
+        "#EverydayCarry",
+        "#Outdoor",
+        "#Gadget"
+      ],
+      "broad": [
+        "#ViralFind",
+        "#MustHave",
+        "#HonestReview",
+        "#CreatorFinds"
+      ],
+      "branded": [],
+      "location": [],
+      "warnings": [
+        "trimmed hashtags to platform limit (10)"
+      ]
+    },
+    "tiktok": {
+      "primary": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter"
+      ],
+      "niche": [
+        "#UsefulGadgets",
+        "#OutdoorGear",
+        "#SurvivalGadget",
+        "#EcoGadget",
+        "#ProductDemo",
+        "#GearReview",
+        "#WorthIt",
+        "#EverydayCarry",
+        "#Outdoor",
+        "#Gadget"
+      ],
+      "broad": [
+        "#ViralFind",
+        "#MustHave",
+        "#HonestReview",
+        "#CreatorFinds"
+      ],
+      "branded": [],
+      "location": [],
+      "warnings": [
+        "trimmed hashtags to platform limit (10)"
+      ]
+    },
+    "instagram_reels": {
+      "primary": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter"
+      ],
+      "niche": [
+        "#UsefulGadgets",
+        "#OutdoorGear",
+        "#SurvivalGadget",
+        "#EcoGadget",
+        "#ProductDemo",
+        "#GearReview",
+        "#WorthIt",
+        "#EverydayCarry",
+        "#Outdoor",
+        "#Gadget"
+      ],
+      "broad": [
+        "#ViralFind",
+        "#MustHave",
+        "#HonestReview",
+        "#CreatorFinds"
+      ],
+      "branded": [],
+      "location": [],
+      "warnings": [
+        "trimmed hashtags to platform limit (10)"
+      ]
+    },
+    "youtube_shorts": {
+      "primary": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter"
+      ],
+      "niche": [
+        "#UsefulGadgets",
+        "#OutdoorGear",
+        "#SurvivalGadget",
+        "#EcoGadget",
+        "#ProductDemo",
+        "#GearReview",
+        "#WorthIt",
+        "#EverydayCarry",
+        "#Outdoor",
+        "#Gadget"
+      ],
+      "broad": [
+        "#ViralFind",
+        "#MustHave",
+        "#HonestReview",
+        "#CreatorFinds"
+      ],
+      "branded": [],
+      "location": [],
+      "warnings": [
+        "trimmed hashtags to platform limit (10)"
+      ]
+    },
+    "x": {
+      "primary": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter"
+      ],
+      "niche": [
+        "#UsefulGadgets",
+        "#OutdoorGear",
+        "#SurvivalGadget",
+        "#EcoGadget",
+        "#ProductDemo",
+        "#GearReview",
+        "#WorthIt",
+        "#EverydayCarry",
+        "#Outdoor",
+        "#Gadget"
+      ],
+      "broad": [
+        "#ViralFind",
+        "#MustHave",
+        "#HonestReview",
+        "#CreatorFinds"
+      ],
+      "branded": [],
+      "location": [],
+      "warnings": [
+        "trimmed hashtags to platform limit (10)"
+      ]
+    }
+  },
+  "disclosures": {
+    "affiliate": {
+      "required": true,
+      "disclosure_type": "affiliate",
+      "short_text": "Affiliate link if approved \u2014 I'll clearly mark it.",
+      "long_text": "If I receive an affiliate link or code, I may earn a small commission. I'll mark it clearly when that happens.",
+      "placement_note": "Place in caption, description, or pinned comment \u2014 not hidden."
+    }
+  },
+  "status": "complete",
+  "notes": [],
+  "generated_at": "2026-05-30T21:31:30.501460+00:00",
+  "platforms_legacy": [
+    {
+      "platform": "clapper",
+      "platform_label": "Clapper",
+      "caption": "People kept asking where to buy this Solar-powered lighter.\nuses sunlight instead of fuel or batteries.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "cta": "Comment SOLAR and check the pinned link",
+      "duration_hint": "60s recommended",
+      "aspect_ratio": "9:16",
+      "notes": "Narration uses ElevenLabs voice (internal note). Clapper: keep captions tight and conversational. Disclosure: Affiliate link if approved \u2014 I'll clearly mark it. Pinned comment: Comment SOLAR and check the pinned link"
+    },
+    {
+      "platform": "tiktok",
+      "platform_label": "TikTok",
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "cta": "Comment SOLAR and check the pinned link",
+      "duration_hint": "30s recommended",
+      "aspect_ratio": "9:16",
+      "notes": "Narration uses ElevenLabs voice (internal note). TikTok: shorter captions perform well; use pinned comment for links. Disclosure: Affiliate link if approved \u2014 I'll clearly mark it. Pinned comment: Comment SOLAR and check the pinned link"
+    },
+    {
+      "platform": "instagram_reels",
+      "platform_label": "Instagram Reels",
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nuses sunlight instead of fuel or batteries.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets\n\n#SolarPoweredLighter #Solar #Powered #Lighter #UsefulGadgets",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered",
+        "#Lighter",
+        "#UsefulGadgets"
+      ],
+      "cta": "Comment SOLAR and check the pinned link",
+      "duration_hint": "30s recommended",
+      "aspect_ratio": "9:16",
+      "notes": "Narration uses ElevenLabs voice (internal note). Reels: hook in first line; hashtags often in caption or first comment. Disclosure: Affiliate link if approved \u2014 I'll clearly mark it. Pinned comment: Comment SOLAR and check the pinned link"
+    },
+    {
+      "platform": "youtube_shorts",
+      "platform_label": "YouTube Shorts",
+      "caption": "People kept asking where to buy this Solar-powered lighter.\n\nComment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar",
+        "#Powered"
+      ],
+      "cta": "Comment SOLAR and check the pinned link",
+      "duration_hint": "45s recommended",
+      "aspect_ratio": "9:16",
+      "notes": "Narration uses ElevenLabs voice (internal note). Shorts: title visible in feed; description for context and links. Disclosure: Affiliate link if approved \u2014 I'll clearly mark it. Pinned comment: Comment SOLAR and check the pinned link"
+    },
+    {
+      "platform": "x",
+      "platform_label": "X (Twitter)",
+      "caption": "People kept asking where to buy this Solar-powered lighter. Comment SOLAR and check the pinned link\n\nAffiliate link if approved \u2014 I'll clearly mark it.\n\n#SolarPoweredLighter #Solar",
+      "hashtags": [
+        "#SolarPoweredLighter",
+        "#Solar"
+      ],
+      "cta": "Comment SOLAR and check the pinned link",
+      "duration_hint": "60s recommended",
+      "aspect_ratio": "16:9",
+      "notes": "Narration uses ElevenLabs voice (internal note). X: one strong sentence; minimal hashtags. Disclosure: Affiliate link if approved \u2014 I'll clearly mark it."
+    }
+  ]
+}

@@ -286,6 +286,30 @@ def _legacy_platform_metadata_from_package(metadata_package: Any) -> list[Platfo
     return results
 
 
+def _build_storyboard_package(
+    brief: SocialContentBrief,
+    result: SocialWorkflowResult,
+    *,
+    content_format: str,
+) -> Any:
+    """Generate StoryboardPackage via genesis.visuals engine."""
+    from genesis.visuals.storyboard_engine import generate_storyboard_package
+
+    narration_path = ""
+    if result.narration and result.narration.path:
+        narration_path = result.narration.path
+
+    return generate_storyboard_package(
+        brief,
+        result.script_package,
+        metadata_package=result.metadata_package,
+        script_text=result.script_text,
+        narration_path=narration_path,
+        content_format=content_format,
+        platforms=brief.platforms,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Posting package writer
 # ---------------------------------------------------------------------------
@@ -299,7 +323,11 @@ def write_posting_package(result: SocialWorkflowResult) -> PostingPackage:
         script.txt              — Script text
         script_package.json     — Full ScriptPackage (hooks, sections, CTAs, …)
         overlay_captions.json   — Overlay caption list for video editing
-        visual_plan.md          — Visual plan skeleton
+        visual_plan.md          — Visual plan (from storyboard when available)
+        storyboard.json         — Full storyboard package
+        shot_plan.json          — Shot plan only
+        visual_prompts.md       — Text-only AI/manual prompt cards
+        filming_checklist.md    — On-set filming checklist
         metadata_pack.json      — Per-platform metadata array
         posting_checklist.md    — Manual posting checklist
 
@@ -349,7 +377,48 @@ def write_posting_package(result: SocialWorkflowResult) -> PostingPackage:
     overlays_json = json.dumps({"job_id": result.job_id, "captions": captions}, indent=2)
     overlays_path.write_text(overlays_json, encoding="utf-8")
 
-    # --- visual_plan.md ---
+    # --- storyboard outputs (Phase 14) ---
+    storyboard_path = run_dir / "storyboard.json"
+    shot_plan_path = run_dir / "shot_plan.json"
+    visual_prompts_path = run_dir / "visual_prompts.md"
+    filming_checklist_path = run_dir / "filming_checklist.md"
+
+    if result.storyboard_package is not None and hasattr(result.storyboard_package, "to_json"):
+        sb = result.storyboard_package
+        storyboard_path.write_text(sb.to_json(), encoding="utf-8")
+        shot_plan_path.write_text(
+            json.dumps(sb.shot_plan.to_dict(), indent=2),
+            encoding="utf-8",
+        )
+        from genesis.visuals.visual_prompt_engine import format_visual_prompts_md
+        visual_prompts_path.write_text(
+            format_visual_prompts_md(sb.visual_prompts, job_id=result.job_id),
+            encoding="utf-8",
+        )
+        filming_lines = "\n".join(f"- [ ] {item}" for item in sb.filming_checklist)
+        filming_checklist_path.write_text(
+            f"# Filming Checklist — {result.job_id}\n\n{filming_lines}\n",
+            encoding="utf-8",
+        )
+    else:
+        storyboard_path.write_text(
+            json.dumps({"job_id": result.job_id, "status": "skipped"}, indent=2),
+            encoding="utf-8",
+        )
+        shot_plan_path.write_text(
+            json.dumps({"job_id": result.job_id, "status": "skipped", "scenes": []}, indent=2),
+            encoding="utf-8",
+        )
+        visual_prompts_path.write_text(
+            f"# Visual Prompts — {result.job_id}\n\n_Storyboard not generated._\n",
+            encoding="utf-8",
+        )
+        filming_checklist_path.write_text(
+            f"# Filming Checklist — {result.job_id}\n\n- [ ] Run workflow with script package\n",
+            encoding="utf-8",
+        )
+
+    # --- visual_plan.md (backward compatible) ---
     visual_plan_path = run_dir / "visual_plan.md"
     visual_plan_path.write_text(
         _build_visual_plan_md(result),
@@ -397,6 +466,10 @@ def write_posting_package(result: SocialWorkflowResult) -> PostingPackage:
         narration_path=narration_path,
         script_package_path=str(script_pkg_path),
         overlay_captions_path=str(overlays_path),
+        storyboard_path=str(storyboard_path),
+        shot_plan_path=str(shot_plan_path),
+        visual_prompts_path=str(visual_prompts_path),
+        filming_checklist_path=str(filming_checklist_path),
     )
 
     logger.info("posting package written → %s", run_dir)
@@ -404,11 +477,17 @@ def write_posting_package(result: SocialWorkflowResult) -> PostingPackage:
 
 
 def _build_visual_plan_md(result: SocialWorkflowResult) -> str:
+    if result.storyboard_package is not None and hasattr(result.storyboard_package, "shot_plan"):
+        from genesis.visuals.filming_checklist import build_visual_plan_from_storyboard
+        return build_visual_plan_from_storyboard(
+            result.storyboard_package,
+            script_source=result.script_source,
+            platforms=result.brief.platforms,
+        )
+
     brief = result.brief
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     platforms_str = ", ".join(platform_label(p) for p in brief.platforms)
-
-    # Pull overlay captions into visual notes if available
     overlay_block = ""
     if result.script_package is not None:
         overlays = getattr(result.script_package, "overlay_captions", []) or []
@@ -418,50 +497,21 @@ def _build_visual_plan_md(result: SocialWorkflowResult) -> str:
                 for i, c in enumerate(overlays)
             )
             overlay_block = (
-                "\n## Overlay Captions (from script engine)\n\n"
-                "| # | Timing | Text | Purpose |\n"
-                "|---|--------|------|---------|\n"
-                + rows + "\n"
+                "\n## Overlay Captions\n\n| # | Timing | Text | Purpose |\n"
+                "|---|--------|------|---------|\n" + rows + "\n"
             )
-
     return textwrap.dedent(f"""\
         # Visual Plan — {result.job_id}
 
         **Generated:** {ts}
         **Platforms:** {platforms_str}
-        **Tone:** {brief.tone}
-        **Audience:** {brief.audience or "General"}
         **Script source:** {result.script_source}
 
         ## Concept
 
         {brief.idea}
-
-        ## Shot Breakdown
-
-        | # | Timing | Shot Type | Description |
-        |---|--------|-----------|-------------|
-        | 1 | 0–3s   | Hook      | Attention-grabbing opening |
-        | 2 | 3–20s  | Body      | Key insight or value delivery |
-        | 3 | 20–28s | CTA       | {brief.cta or "Call to action"} |
         {overlay_block}
-        ## Style Notes
-
-        - **Aspect ratio:** 9:16 (vertical first)
-        - **Colour palette:** TBD — set in Phase 13+ brand config
-        - **On-screen text:** see overlay_captions.json
-        - **Hero shot:** auto or manual import via `assets/manual_hero_shots/`
-
-        ## Hero Shot
-
-        Generate via Genesis Studio:
-
-        ```
-        from genesis.integrations.hero_shot_provider import generate_hero_shot
-        generate_hero_shot("{brief.idea[:80]}", "assets/videos/hero.mp4")
-        ```
-
-        _Full visual planning and scene-by-scene storyboard reserved for Phase 14+._
+        _Storyboard not generated — re-run with script package for full shot plan._
     """)
 
 
@@ -525,8 +575,10 @@ def _build_posting_checklist_md(result: SocialWorkflowResult) -> str:
         ## Pre-Flight
 
         - [ ] Script reviewed and approved (`script.txt`)
-        - [ ] Visual plan reviewed (`visual_plan.md`)
-        - [ ] Overlay captions reviewed (`overlay_captions.json`)
+            - [ ] Visual plan reviewed (`visual_plan.md`)
+            - [ ] Storyboard reviewed (`storyboard.json`, `shot_plan.json`)
+            - [ ] Filming checklist reviewed (`filming_checklist.md`)
+            - [ ] Overlay captions reviewed (`overlay_captions.json`)
         - [ ] Script package reviewed (`script_package.json`)
         {narration_line}
         - [ ] All assets exported at correct resolution
@@ -669,6 +721,16 @@ def run_social_media_workflow(
         errors.append(f"metadata generation failed: {exc}")
         result.metadata_package = None
         result.platform_metadata = []
+
+    # Step 4b — visual storyboard (Phase 14)
+    try:
+        result.storyboard_package = _build_storyboard_package(
+            brief, result, content_format=content_format
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("job=%s: storyboard engine failed: %s", run_id, exc)
+        errors.append(f"storyboard generation failed: {exc}")
+        result.storyboard_package = None
 
     # Step 5 — write package
     if write_package:

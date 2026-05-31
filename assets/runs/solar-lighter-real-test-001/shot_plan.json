@@ -1,0 +1,215 @@
+{
+  "job_id": "solar-lighter-real-test-001",
+  "content_format": "affiliate_followup",
+  "visual_style": "clean product-forward, natural light, social-native; tone: curious, practical, viral",
+  "scenes": [
+    {
+      "scene_id": "scene_01",
+      "section_name": "Pattern Interrupt",
+      "narration_text": "People kept asking where to buy this Solar-powered lighter.",
+      "visual_goal": "Open with primary hook energy. Stop the scroll with a close-up product moment.",
+      "shot_type": "product_closeup",
+      "camera_direction": "Vertical 9:16, tight close-up, product centered, shallow depth of field.",
+      "subject_action": "Frame Solar-powered lighter clearly; show key feature in first second.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "macro detail of key feature",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "People kept asking where to buy this Solar-powered lighter.",
+      "timing_hint": "0\u20132s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Quick cut within first second; caption punch-in optional",
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_02",
+      "section_name": "Proof",
+      "narration_text": "The video went viral \u2014 so people had reason to pay attention.",
+      "visual_goal": "Show buyer interest, comments, or social proof (film separately).",
+      "shot_type": "proof_screenshot",
+      "camera_direction": "Vertical 9:16, screen recording or filmed phone screen \u2014 readable text.",
+      "subject_action": "Capture proof UI or comments as a separate insert.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "The video went viral",
+      "timing_hint": "3\u20136s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions",
+        "Blur personal info if needed before publish"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_03",
+      "section_name": "Demonstration / Teaching",
+      "narration_text": "This is the part people replay: a short on-camera moment.",
+      "visual_goal": "Demonstrate the product in real use.",
+      "shot_type": "hand_demonstration",
+      "camera_direction": "Vertical 9:16, hands and product in frame, stable tripod or slow push-in.",
+      "subject_action": "Demonstrate Solar-powered lighter in one continuous action \u2014 hands in frame.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "No fuel",
+      "timing_hint": "7\u201320s",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_04",
+      "section_name": "Meaning",
+      "narration_text": "If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly buyers, this solves a real annoyance.",
+      "visual_goal": "Connect emotionally or explain why this matters. Narration: If you're in outdoor gadget lovers, smokers, survival gear people, eco-friendly .",
+      "shot_type": "talking_head",
+      "camera_direction": "Vertical 9:16, eye-level, creator on camera.",
+      "subject_action": "Perform the action that matches: Meaning.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "end",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    },
+    {
+      "scene_id": "scene_05",
+      "section_name": "CTA",
+      "narration_text": "Check the pinned comment \u2014 link will be marked if it's affiliate.",
+      "visual_goal": "Pinned comment / keyword CTA \u2014 film CTA clip separately.",
+      "shot_type": "text_overlay",
+      "camera_direction": "Vertical 9:16, static or subtle motion; leave lower-third safe for captions.",
+      "subject_action": "Film a dedicated CTA beat \u2014 point to comment, bio, or support link placeholder.",
+      "broll_suggestions": [
+        "2\u20133 second hold before action",
+        "2\u20133 second hold after action",
+        "wide + close-up coverage",
+        "Solar-powered lighter in hand",
+        "feature close-up",
+        "sunlight or use environment if relevant",
+        "comment/DM proof screen (separate clip)"
+      ],
+      "overlay_text": "Comment SOLAR and check the pinned link",
+      "timing_hint": "section 5/5",
+      "props_needed": [
+        "Solar-powered lighter",
+        "product sample",
+        "phone for proof screenshot"
+      ],
+      "location_notes": "Bright natural light or clean desk; avoid cluttered background.",
+      "editing_notes": [
+        "Match cut to narration beat",
+        "Leave safe margin for on-screen captions",
+        "Hold CTA frame 2\u20133 seconds minimum"
+      ],
+      "risk_notes": [
+        "Do not imply official partnership or affiliate approval unless brief confirms it.",
+        "Include affiliate disclosure on screen or in caption per metadata.",
+        "Do not show sponsored/#ad overlays unless sponsorship is confirmed."
+      ]
+    }
+  ],
+  "broll_plan": [
+    "2\u20133 second hold before action",
+    "2\u20133 second hold after action",
+    "wide + close-up coverage",
+    "macro detail of key feature",
+    "Solar-powered lighter in hand",
+    "feature close-up",
+    "sunlight or use environment if relevant",
+    "comment/DM proof screen (separate clip)"
+  ],
+  "required_props": [
+    "Solar-powered lighter",
+    "product sample",
+    "phone for proof screenshot"
+  ],
+  "filming_locations": [
+    "Bright natural light or clean desk; avoid cluttered background."
+  ],
+  "audio_notes": [],
+  "lighting_notes": [
+    "Soft key light for talking head; diffuse window light preferred.",
+    "Avoid mixed color temperatures (tungsten + daylight)."
+  ],
+  "editing_notes": [
+    "Sync to Viral Spine section order",
+    "Caption safe zone on all text overlays"
+  ],
+  "status": "complete",
+  "warnings": []
+}
