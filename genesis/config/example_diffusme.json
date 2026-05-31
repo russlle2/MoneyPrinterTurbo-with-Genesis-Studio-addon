@@ -1,0 +1,10 @@
+{
+  "username": "",
+  "password": "",
+  "max_generations_per_hour": 10,
+  "max_generations_per_day": 50,
+  "low_credit_threshold": 200,
+  "estimated_cost_per_generation": 1,
+  "mode": "auto",
+  "_comment": "Set GENESIS_DIFFUSME_USERNAME/PASSWORD or copy to diffusme.json (gitignored). Playwright has no API."
+}

@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "log_level": "INFO",
+  "comfyui_url": "http://127.0.0.1:8188",
+  "default_mode": "local_first",
+  "output_base_dir": "assets",
+  "_comment": "Set GENESIS_STUDIO_ENABLED=true to enable advanced mode. Copy to genesis_settings.json to override."
+}
