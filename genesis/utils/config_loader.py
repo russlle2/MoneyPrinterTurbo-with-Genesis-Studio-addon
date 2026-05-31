@@ -27,8 +27,25 @@ _DEFAULT_CONFIG_DIR = _REPO_ROOT / "genesis" / "config"
 DEFAULT_ELEVENLABS: dict[str, Any] = {
     "api_key": "",
     "voice_id": "",
+    "voice_name": "",
     "model_id": "eleven_multilingual_v2",
+    "output_format": "mp3_44100_128",
     "base_url": "https://api.elevenlabs.io/v1",
+}
+
+DEFAULT_LOCAL_LLM: dict[str, Any] = {
+    "enabled": False,
+    "backend": "disabled",
+    "endpoint_url": "",
+    "model": "",
+    "timeout_seconds": 120,
+    "max_tokens": 1200,
+    "temperature": 0.7,
+    "system_prompt": (
+        "You are Genesis Studio's local creative writing model "
+        "for short-form social media content."
+    ),
+    "debug_prompts": False,
 }
 
 DEFAULT_DIFFUSME: dict[str, Any] = {
@@ -52,8 +69,22 @@ DEFAULT_GENESIS_SETTINGS: dict[str, Any] = {
 _ENV_MAP_ELEVENLABS = {
     "GENESIS_ELEVENLABS_API_KEY": "api_key",
     "GENESIS_ELEVENLABS_VOICE_ID": "voice_id",
+    "GENESIS_ELEVENLABS_VOICE_NAME": "voice_name",
     "GENESIS_ELEVENLABS_MODEL_ID": "model_id",
+    "GENESIS_ELEVENLABS_OUTPUT_FORMAT": "output_format",
     "GENESIS_ELEVENLABS_BASE_URL": "base_url",
+}
+
+_ENV_MAP_LOCAL_LLM = {
+    "GENESIS_LOCAL_LLM_ENABLED": "enabled",
+    "GENESIS_LOCAL_LLM_BACKEND": "backend",
+    "GENESIS_LOCAL_LLM_ENDPOINT_URL": "endpoint_url",
+    "GENESIS_LOCAL_LLM_MODEL": "model",
+    "GENESIS_LOCAL_LLM_TIMEOUT_SECONDS": "timeout_seconds",
+    "GENESIS_LOCAL_LLM_MAX_TOKENS": "max_tokens",
+    "GENESIS_LOCAL_LLM_TEMPERATURE": "temperature",
+    "GENESIS_LOCAL_LLM_SYSTEM_PROMPT": "system_prompt",
+    "GENESIS_LOCAL_LLM_DEBUG_PROMPTS": "debug_prompts",
 }
 
 _ENV_MAP_DIFFUSME = {
@@ -188,6 +219,17 @@ def load_elevenlabs_config(config_root: Path | str | None = None) -> dict[str, A
         local_filename="elevenlabs.json",
         env_map=_ENV_MAP_ELEVENLABS,
         config_root=config_root,
+    )
+
+
+def load_local_llm_config(config_root: Path | str | None = None) -> dict[str, Any]:
+    return load_merged_config(
+        name="local_llm",
+        defaults=DEFAULT_LOCAL_LLM,
+        local_filename="local_llm.json",
+        env_map=_ENV_MAP_LOCAL_LLM,
+        config_root=config_root,
+        coerce_bools={"enabled", "debug_prompts"},
     )
 
 

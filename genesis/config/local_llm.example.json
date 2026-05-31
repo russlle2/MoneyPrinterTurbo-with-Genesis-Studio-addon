@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "backend": "custom_http",
+  "endpoint_url": "http://localhost:11434/api/generate",
+  "model": "llama3.1-local",
+  "timeout_seconds": 120,
+  "max_tokens": 1200,
+  "temperature": 0.7,
+  "system_prompt": "You are Genesis Studio's local creative writing model for short-form social media content.",
+  "debug_prompts": false,
+  "_comment": "Copy to genesis/config/local_llm.json and set enabled=true to activate. Never commit local_llm.json."
+}

@@ -3,5 +3,5 @@
   "voice_id": "",
   "model_id": "eleven_multilingual_v2",
   "base_url": "https://api.elevenlabs.io/v1",
-  "_comment": "Set GENESIS_ELEVENLABS_API_KEY or copy to elevenlabs.json (gitignored). Never commit real keys."
+  "_comment": "See elevenlabs.example.json and ELEVENLABS_LOCAL_SETUP.md. Copy to elevenlabs.json (gitignored). Never commit real keys."
 }

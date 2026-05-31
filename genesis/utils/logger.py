@@ -33,7 +33,7 @@ _SECRET_KEY_RE = re.compile(
     re.IGNORECASE,
 )
 _BEARER_RE = re.compile(r"Bearer\s+\S+", re.IGNORECASE)
-_SK_RE = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
+_SK_RE = re.compile(r"\bsk[-_][A-Za-z0-9_-]{8,}\b")
 
 
 def repo_log_dir() -> Path:

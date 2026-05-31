@@ -38,6 +38,7 @@ streamlit.log
 # Genesis Studio
 genesis/config/*.json
 !genesis/config/example*.json
+!genesis/config/*.example.json
 assets/images/*
 !assets/images/.gitkeep
 assets/videos/*

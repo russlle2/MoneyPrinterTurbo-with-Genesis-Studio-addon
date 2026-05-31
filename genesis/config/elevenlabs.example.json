@@ -1,0 +1,9 @@
+{
+  "api_key": "YOUR_ELEVENLABS_API_KEY_HERE",
+  "voice_id": "YOUR_VOICE_ID_HERE",
+  "voice_name": "Your Voice Name",
+  "model_id": "eleven_multilingual_v2",
+  "output_format": "mp3_44100_128",
+  "base_url": "https://api.elevenlabs.io/v1",
+  "_comment": "Copy to genesis/config/elevenlabs.json and replace placeholders. Never commit elevenlabs.json."
+}
