@@ -81,6 +81,17 @@ _SHOW_SCENES_OF = re.compile(
     r"\b(?:show(?:ing)?|with|include|feature)\s+(?:scenes?|shots?|clips?|footage|moments?)\s+of\s+",
     re.I,
 )
+# Comparison hooks ("X outlasted/beats/vs Y") -> two separate filmable subjects.
+_COMPARISON_SPLIT = re.compile(
+    r"\s+\b(?:outlast(?:ed|s)?|outperform(?:ed|s)?|beat(?:s|en)?|"
+    r"destroy(?:ed|s)?|crush(?:ed|es)?|vs\.?|versus|compared\s+to|better\s+than)\b\s+",
+    re.I,
+)
+# Leading demonstratives/possessives that are not part of the subject noun.
+_LEADING_DEMO = re.compile(
+    r"^(?:this|that|these|those|my|your|our|his|her|its|their)\s+",
+    re.I,
+)
 _LEADING_FILLER = re.compile(
     r"^(?:be|being|to\s+be|that\s+(?:show|shows|are|is)|how\s+to|the\s+importance\s+of)\s+",
     re.I,
@@ -128,8 +139,12 @@ def _extract_scene_subjects(idea: str) -> list[str]:
 
     # Split into candidate phrases on sentence/clause boundaries.
     raw_parts = re.split(r"[.;\n]+|\s+\band\b\s+|,\s+", text)
-    subjects: list[str] = []
+    # Expand comparison hooks so each compared item becomes its own subject.
+    expanded: list[str] = []
     for part in raw_parts:
+        expanded.extend(_COMPARISON_SPLIT.split(part))
+    subjects: list[str] = []
+    for part in expanded:
         p = part.strip()
         if not p:
             continue
@@ -139,6 +154,7 @@ def _extract_scene_subjects(idea: str) -> list[str]:
         if _DIRECTION_LEAD.match(p):
             continue
         p = _LEADING_FILLER.sub("", p).strip()
+        p = _LEADING_DEMO.sub("", p).strip()
         p = _TRAILING_FILLER.sub("", p).strip()
         # Drop phrases that are only style/mood words (captured separately).
         if _is_style_only(p):

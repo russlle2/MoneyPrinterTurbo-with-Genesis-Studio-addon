@@ -46,7 +46,7 @@ _META_VIDEO_PREFIX = re.compile(
 
 # Trailing creator-direction clauses (style notes) to drop from the topic phrase.
 _TRAILING_DIRECTION = re.compile(
-    r"[\.,;]?\s*(?:and\s+)?(?:please\s+)?(?:use|with|in|using|make\s+it|keep\s+it|"
+    r"[\.,;]?\s*(?:and\s+)?(?:please\s+)?\b(?:use|with|in|using|make\s+it|keep\s+it|"
     r"add|include|show\s+scenes?\s+of)\b.*$",
     re.IGNORECASE,
 )
@@ -178,6 +178,21 @@ def clean_topic_phrase(text: str) -> str:
     return t
 
 
+# Pure style/mood words that should never be treated as a speakable subject.
+_SUBJECT_STYLE_WORDS = frozenset({
+    "warm", "cozy", "emotional", "cinematic", "dramatic", "moody", "vibrant",
+    "aesthetic", "atmosphere", "mood", "tone", "vibe", "vibes", "feel", "feeling",
+    "style", "look", "calm", "serene", "peaceful", "soft", "bright", "bold",
+    "epic", "beautiful", "stunning", "gorgeous", "energetic", "colorful",
+})
+
+
+def _is_style_phrase(phrase: str) -> bool:
+    words = re.findall(r"[a-z']+", phrase.lower())
+    meaningful = [w for w in words if w not in {"and", "a", "an", "the", "very", "really"}]
+    return bool(meaningful) and all(w in _SUBJECT_STYLE_WORDS for w in meaningful)
+
+
 def extract_clean_subject(idea: str, offer: str = "") -> str:
     """
     Extract a short, speakable subject (product/topic name) from a messy idea.
@@ -186,6 +201,15 @@ def extract_clean_subject(idea: str, offer: str = "") -> str:
         return _title_case_phrase(offer.strip())
 
     t = clean_topic_phrase(idea)
+    # Drop trailing creator-direction ("use a warm atmosphere"), reasoning, and
+    # comparison clauses so they don't get mistaken for the subject.
+    t = _TRAILING_DIRECTION.sub("", t).strip()
+    t = re.split(r"\s+\b(?:because|since|so\s+that)\b\s+", t, maxsplit=1)[0].strip()
+    t = re.split(
+        r"\s+\b(?:outlast(?:ed|s)?|outperform(?:ed|s)?|beat(?:s|en)?|"
+        r"vs\.?|versus|compared\s+to|better\s+than)\b\s+",
+        t, maxsplit=1,
+    )[0].strip()
 
     # Prefer "a/an/the <noun phrase>" capture
     m = re.search(
@@ -196,7 +220,7 @@ def extract_clean_subject(idea: str, offer: str = "") -> str:
     if m:
         phrase = m.group(1).strip()
         phrase = _trim_at_break(phrase)
-        if _is_valid_subject(phrase):
+        if _is_valid_subject(phrase) and not _is_style_phrase(phrase):
             return _title_case_phrase(phrase)
 
     # "solar-powered lighter" style compound at start
@@ -210,8 +234,14 @@ def extract_clean_subject(idea: str, offer: str = "") -> str:
         if _is_valid_subject(phrase):
             return _title_case_phrase(phrase)
 
-    # Last resort: first 4 meaningful tokens after cleaning
-    tokens = [w for w in t.split() if w.lower() not in _STOPWORDS and len(w) > 1]
+    # Last resort: first few meaningful tokens after cleaning, skipping
+    # stopwords and pure style/mood words and stray punctuation.
+    tokens = []
+    for w in t.split():
+        bare = w.strip(",.;:!?\"'").lower()
+        if len(bare) <= 1 or bare in _STOPWORDS or bare in _SUBJECT_STYLE_WORDS:
+            continue
+        tokens.append(w.strip(",.;:!?\"'"))
     if tokens:
         phrase = " ".join(tokens[:5])
         phrase = _trim_at_break(phrase)
