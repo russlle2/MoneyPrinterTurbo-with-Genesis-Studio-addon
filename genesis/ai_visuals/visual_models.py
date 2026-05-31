@@ -89,9 +89,15 @@ class GeneratedVisualAsset:
     status: str
     warnings: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    source_type: str = "generated"
+    original_path: str = ""
+    imported_at: str = ""
+    validation_status: str = ""
+    validation_warnings: list[str] = field(default_factory=list)
+    assignment_confidence: float = 0.0
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d: dict[str, Any] = {
             "asset_id": self.asset_id,
             "scene_id": self.scene_id,
             "prompt_id": self.prompt_id,
@@ -105,6 +111,25 @@ class GeneratedVisualAsset:
             "warnings": self.warnings,
             "notes": self.notes,
         }
+        if self.source_type:
+            d["source_type"] = self.source_type
+        if self.original_path:
+            d["original_path"] = self.original_path
+        if self.imported_at:
+            d["imported_at"] = self.imported_at
+        if self.validation_status:
+            d["validation_status"] = self.validation_status
+        if self.validation_warnings:
+            d["validation_warnings"] = self.validation_warnings
+        if self.assignment_confidence:
+            d["assignment_confidence"] = self.assignment_confidence
+        return d
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> GeneratedVisualAsset:
+        fields = cls.__dataclass_fields__
+        kwargs = {k: data[k] for k in fields if k in data}
+        return cls(**kwargs)
 
 
 @dataclass

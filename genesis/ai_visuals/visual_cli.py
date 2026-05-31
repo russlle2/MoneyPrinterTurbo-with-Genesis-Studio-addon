@@ -6,6 +6,10 @@ Usage:
     python -m genesis.ai_visuals.visual_cli prompts <job_id>
     python -m genesis.ai_visuals.visual_cli fill <job_id>
     python -m genesis.ai_visuals.visual_cli fill-and-render <job_id> --platform tiktok --brand bold_viral
+    python -m genesis.ai_visuals.visual_cli check-provider --provider local_comfyui
+    python -m genesis.ai_visuals.visual_cli import <job_id>
+    python -m genesis.ai_visuals.visual_cli validate <job_id>
+    python -m genesis.ai_visuals.visual_cli import-and-render <job_id> --platform tiktok --brand bold_viral
 """
 
 from __future__ import annotations
@@ -23,7 +27,13 @@ from genesis.ai_visuals.visual_fill import (  # noqa: E402
     detect_missing_scenes,
     run_visual_fill_for_run,
 )
-from genesis.ai_visuals.provider_router import generate_prompt_card_only  # noqa: E402
+from genesis.ai_visuals.provider_router import (  # noqa: E402
+    check_comfyui_available,
+    generate_prompt_card_only,
+    visual_provider_ready,
+)
+from genesis.ai_visuals.manual_import import import_generated_visuals_for_run  # noqa: E402
+from genesis.ai_visuals.asset_validator import validate_run_visual_assets  # noqa: E402
 from genesis.utils.config_loader import load_ai_visuals_config  # noqa: E402
 
 _RUNS_BASE = _REPO / "assets" / "runs"
@@ -62,7 +72,7 @@ def cmd_prompts(args: argparse.Namespace) -> int:
     for p in prompts:
         generate_prompt_card_only(p, out_dir)
     _header(f"Prompt cards — {args.job_id}")
-    _print(f"  Missing: {len(missing)}  Written: {len(prompts)} → {out_dir}")
+    _print(f"  Missing: {len(missing)}  Written: {len(prompts)} -> {out_dir}")
     return 0
 
 
@@ -71,8 +81,8 @@ def cmd_fill(args: argparse.Namespace) -> int:
     result = run_visual_fill_for_run(
         args.job_id,
         runs_base=runs_base,
-        provider_mode=getattr(args, "provider", None),
-        asset_type=getattr(args, "asset_type", None),
+        provider_mode=getattr(args, "provider", None) or None,
+        asset_type=getattr(args, "asset_type", None) or None,
         brand_preset=getattr(args, "brand", "clean_creator") or "clean_creator",
         platform=getattr(args, "platform", "tiktok") or "tiktok",
         force=getattr(args, "force", False),
@@ -92,8 +102,8 @@ def cmd_fill_and_render(args: argparse.Namespace) -> int:
     fill = run_visual_fill_for_run(
         args.job_id,
         runs_base=runs_base,
-        provider_mode=getattr(args, "provider", None),
-        asset_type=getattr(args, "asset_type", None),
+        provider_mode=getattr(args, "provider", None) or None,
+        asset_type=getattr(args, "asset_type", None) or None,
         brand_preset=getattr(args, "brand", "clean_creator") or "clean_creator",
         platform=getattr(args, "platform", "tiktok") or "tiktok",
         force=getattr(args, "force", False),
@@ -109,6 +119,80 @@ def cmd_fill_and_render(args: argparse.Namespace) -> int:
         render_enabled=True,
     )
     _print(f"  Fill:   {fill.status}")
+    _print(f"  Render: {render.status}")
+    if render.output_path:
+        _print(f"  Video:  {render.output_path}")
+    return 0 if render.status in ("complete", "partial") else 1
+
+
+def cmd_check_provider(args: argparse.Namespace) -> int:
+    cfg = load_ai_visuals_config()
+    if getattr(args, "provider", ""):
+        cfg = {**cfg, "provider_mode": args.provider}
+        if args.provider == "local_comfyui":
+            cfg = {**cfg, "allow_local_comfyui": True}
+    mode = args.provider or cfg.get("provider_mode", "prompt_card_only")
+    ready, msg = visual_provider_ready(mode, cfg)
+    if mode == "local_comfyui":
+        comfy_ready, comfy_msg = check_comfyui_available(cfg)
+        _header(f"Provider check — {mode}")
+        _print(f"  Ready: {comfy_ready}")
+        if comfy_msg:
+            _print(f"  Note:  {comfy_msg}")
+        return 0 if comfy_ready else 1
+    _header(f"Provider check — {mode}")
+    _print(f"  Ready: {ready}")
+    if msg:
+        _print(f"  Note:  {msg}")
+    return 0 if ready else 1
+
+
+def cmd_import(args: argparse.Namespace) -> int:
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else _RUNS_BASE
+    result = import_generated_visuals_for_run(
+        args.job_id,
+        runs_base=runs_base,
+        repo_root=_REPO,
+    )
+    _header(f"Manual import — {args.job_id}")
+    _print(f"  Status:   {result.get('status')}")
+    _print(f"  Imported: {result.get('import_count', 0)}")
+    for w in result.get("warnings", [])[:5]:
+        _print(f"  ! {w}")
+    return 0 if result.get("status") != "failed" else 1
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else _RUNS_BASE
+    run_dir = runs_base / args.job_id
+    cfg = load_ai_visuals_config()
+    assets = validate_run_visual_assets(
+        run_dir, repo_root=_REPO, target_aspect=cfg.get("aspect_ratio", "9:16"),
+    )
+    warn_count = sum(len(a.validation_warnings) for a in assets)
+    _header(f"Validate visuals — {args.job_id}")
+    _print(f"  Assets:   {len(assets)}")
+    _print(f"  Warnings: {warn_count}")
+    _print(f"  Report:   {run_dir / 'visual_asset_validation.md'}")
+    return 0
+
+
+def cmd_import_and_render(args: argparse.Namespace) -> int:
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", "") else _RUNS_BASE
+    imp = import_generated_visuals_for_run(
+        args.job_id, runs_base=runs_base, repo_root=_REPO,
+    )
+    from genesis.video.render_run import render_run_video
+
+    _header(f"Import and render — {args.job_id}")
+    render = render_run_video(
+        args.job_id,
+        runs_base=runs_base,
+        target_platform=getattr(args, "platform", "tiktok") or "tiktok",
+        brand_preset=getattr(args, "brand", "clean_creator") or "clean_creator",
+        render_enabled=True,
+    )
+    _print(f"  Import: {imp.get('status')} ({imp.get('import_count', 0)} files)")
     _print(f"  Render: {render.status}")
     if render.output_path:
         _print(f"  Video:  {render.output_path}")
@@ -133,6 +217,18 @@ def build_parser() -> argparse.ArgumentParser:
     f.add_argument("job_id")
     fr = sub.add_parser("fill-and-render", help="Fill then render draft video")
     fr.add_argument("job_id")
+
+    cp = sub.add_parser("check-provider", help="Check provider availability")
+    cp.add_argument("--provider", default="local_comfyui")
+
+    imp = sub.add_parser("import", help="Import manual_visual_imports folder")
+    imp.add_argument("job_id")
+
+    val = sub.add_parser("validate", help="Validate generated/imported visuals")
+    val.add_argument("job_id")
+
+    ir = sub.add_parser("import-and-render", help="Import manual visuals then render")
+    ir.add_argument("job_id")
     return p
 
 
@@ -147,6 +243,10 @@ def main(argv: list[str] | None = None) -> int:
         "prompts": cmd_prompts,
         "fill": cmd_fill,
         "fill-and-render": cmd_fill_and_render,
+        "check-provider": cmd_check_provider,
+        "import": cmd_import,
+        "validate": cmd_validate,
+        "import-and-render": cmd_import_and_render,
     }
     return handlers[args.command](args)
 

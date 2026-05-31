@@ -47,6 +47,7 @@ def build_export_manifest(
         "beat_timing.json",
         "generated_visuals_manifest.json",
         "ai_visual_fill_report.md",
+        "visual_asset_validation.md",
         "render_notes.md",
         "export_manifest.json",
         "draft_video.mp4",

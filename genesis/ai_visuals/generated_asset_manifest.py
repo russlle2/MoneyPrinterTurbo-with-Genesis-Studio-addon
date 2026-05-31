@@ -47,8 +47,15 @@ def build_generated_visuals_manifest(
         "scene_assignments": {
             a.scene_id: a.path
             for a in generated_assets
-            if a.path and a.asset_type in ("image", "video") and Path(a.path).suffix.lower() in _RENDERABLE_EXT
+            if a.path
+            and a.scene_id
+            and a.scene_id not in ("thumbnail",)
+            and a.asset_type in ("image", "video")
+            and Path(a.path).suffix.lower() in _RENDERABLE_EXT
         },
+        "manual_import_count": sum(
+            1 for a in generated_assets if getattr(a, "source_type", "") == "manual_import"
+        ),
         "warnings": warnings or [],
         "notes": notes or [],
     }
@@ -129,7 +136,11 @@ def update_media_manifest_with_generated_assets(
             continue  # preserve real media
         m["selected_assets"] = [gen_path]
         m["fallback_needed"] = False
-        m["reason"] = "generated_visual_asset"
+        m["reason"] = (
+            "manual_import_visual_asset"
+            if "manual" in gen_path or "imported" in gen_path
+            else "generated_visual_asset"
+        )
         m["confidence"] = 0.5
         matches[sid] = m
 

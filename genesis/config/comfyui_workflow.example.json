@@ -1,0 +1,25 @@
+{
+  "genesis_metadata": {
+    "description": "PLACEHOLDER workflow — copy to a private path and replace class_type values for your ComfyUI install.",
+    "placeholders": {
+      "positive_prompt": "__POSITIVE_PROMPT__",
+      "negative_prompt": "__NEGATIVE_PROMPT__",
+      "width": "__WIDTH__",
+      "height": "__HEIGHT__",
+      "seed": "__SEED__"
+    },
+    "validation_warning": "Do not run until PLACEHOLDER nodes are replaced with real ComfyUI node types."
+  },
+  "1": {
+    "class_type": "PLACEHOLDER_TextEncode",
+    "inputs": {
+      "text": "__POSITIVE_PROMPT__"
+    }
+  },
+  "2": {
+    "class_type": "PLACEHOLDER_SaveImage",
+    "inputs": {
+      "filename_prefix": "genesis_visual"
+    }
+  }
+}

@@ -304,6 +304,29 @@ def run_creator_pipeline(
             steps.append(_step("ai_visual_fill", CreatorStatus.PARTIAL, warnings=[str(exc)]))
             all_warnings.append(f"ai visual fill: {exc}")
 
+    if req.options.get("import_visuals") or req.options.get("manual_visuals_path"):
+        try:
+            from genesis.ai_visuals.manual_import import import_generated_visuals_for_run
+
+            ext = [req.options["manual_visuals_path"]] if req.options.get("manual_visuals_path") else None
+            imp = import_generated_visuals_for_run(
+                job_id,
+                runs_base=runs_base,
+                repo_root=repo_root,
+                external_paths=ext,
+            )
+            steps.append(CreatorRunStep(
+                step_name="manual_visual_import",
+                status=imp.get("status", CreatorStatus.PARTIAL),
+                completed_at=_now(),
+                warnings=imp.get("warnings", [])[:5],
+                notes=[f"imported={imp.get('import_count', 0)}"],
+            ))
+            all_warnings.extend(imp.get("warnings", [])[:3])
+        except Exception as exc:  # noqa: BLE001
+            steps.append(_step("manual_visual_import", CreatorStatus.PARTIAL, warnings=[str(exc)]))
+            all_warnings.append(f"manual visual import: {exc}")
+
     # Step 4: render
     # Update job_id in req to ensure it matches the actual run
     req.job_id = job_id

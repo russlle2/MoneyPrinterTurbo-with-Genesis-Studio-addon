@@ -121,10 +121,27 @@ def read_export_status_safe(run_dir: Path, record_export_dir: str) -> dict[str, 
 
 def read_ai_visual_status_safe(run_dir: Path) -> dict[str, Any]:
     gvm = _safe_json(run_dir / "generated_visuals_manifest.json")
+    validation_warns = 0
+    val_path = run_dir / "visual_asset_validation.md"
+    if val_path.is_file():
+        try:
+            m = re.search(r"\*\*Total warnings:\*\*\s*(\d+)", val_path.read_text(encoding="utf-8"))
+            if m:
+                validation_warns = int(m.group(1))
+        except OSError:
+            pass
+    manual_dir = run_dir / "manual_visual_imports"
+    manual_on_disk = len([
+        p for p in manual_dir.iterdir()
+        if manual_dir.is_dir() and p.is_file()
+    ]) if manual_dir.is_dir() else 0
     return {
         "missing_scene_count": int(gvm.get("missing_scene_count", 0)) if gvm else 0,
         "generated_visual_count": int(gvm.get("generated_asset_count", 0)) if gvm else 0,
+        "manual_import_count": int(gvm.get("manual_import_count", 0)) if gvm else manual_on_disk,
+        "validation_warning_count": validation_warns,
         "has_fill_report": (run_dir / "ai_visual_fill_report.md").is_file(),
+        "has_manual_import_dir": manual_dir.is_dir(),
     }
 
 
@@ -231,15 +248,22 @@ def build_run_card(
         beat_sync_status=trans.get("beat_sync_status", ""),
         missing_scene_count=ai_vis.get("missing_scene_count", 0),
         generated_visual_count=ai_vis.get("generated_visual_count", 0),
+        manual_import_count=ai_vis.get("manual_import_count", 0),
+        validation_warning_count=ai_vis.get("validation_warning_count", 0),
         warnings=warnings[:8],
         notes=[],
     )
     card.suggested_commands = _suggested_commands(card)
-    if ai_vis.get("missing_scene_count", 0) or ai_vis.get("has_fill_report"):
+    if (
+        ai_vis.get("missing_scene_count", 0)
+        or ai_vis.get("has_fill_report")
+        or ai_vis.get("has_manual_import_dir")
+        or ai_vis.get("manual_import_count", 0)
+    ):
         card.suggested_commands.insert(
             0,
-            f"python -m genesis.ai_visuals.visual_cli fill-and-render {card.job_id} "
-            f"--provider prompt_card_only",
+            f"python -m genesis.ai_visuals.visual_cli import-and-render {card.job_id} "
+            f"--platform {plat} --brand {brand}",
         )
     return card
 

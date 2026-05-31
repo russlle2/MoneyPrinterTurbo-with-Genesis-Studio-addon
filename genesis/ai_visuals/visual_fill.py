@@ -206,7 +206,13 @@ def run_visual_fill_for_run(
         return result
 
     generated: list = []
-    if generate_assets and (cfg.get("enabled") or mode in ("prompt_card_only", "manual_chatgpt", "hero_shot_provider", "auto")):
+    if generate_assets and (
+        cfg.get("enabled")
+        or mode in (
+            "prompt_card_only", "manual_chatgpt", "hero_shot_provider",
+            "auto", "local_comfyui",
+        )
+    ):
         generated = generate_assets_for_missing_scenes(
             run_dir, prompts, provider_mode=mode, config=cfg, repo_root=repo_root,
         )

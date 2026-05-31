@@ -66,6 +66,14 @@ DEFAULT_GENESIS_SETTINGS: dict[str, Any] = {
     "output_base_dir": "assets",
 }
 
+DEFAULT_AI_VISUALS_COMFYUI: dict[str, Any] = {
+    "endpoint_url": "http://127.0.0.1:8188",
+    "workflow_path": "genesis/config/comfyui_workflow.example.json",
+    "timeout_seconds": 180,
+    "poll_interval_seconds": 2,
+    "output_subdir": "comfyui",
+}
+
 DEFAULT_AI_VISUALS: dict[str, Any] = {
     "enabled": False,
     "provider_mode": "prompt_card_only",
@@ -76,6 +84,7 @@ DEFAULT_AI_VISUALS: dict[str, Any] = {
     "allow_external_paid": False,
     "output_dir": "generated_visuals",
     "debug_prompts": False,
+    "comfyui": DEFAULT_AI_VISUALS_COMFYUI,
 }
 
 _ENV_MAP_ELEVENLABS = {
@@ -276,7 +285,7 @@ def load_genesis_settings(config_root: Path | str | None = None) -> dict[str, An
 
 
 def load_ai_visuals_config(config_root: Path | str | None = None) -> dict[str, Any]:
-    return load_merged_config(
+    merged = load_merged_config(
         name="ai_visuals",
         defaults=DEFAULT_AI_VISUALS,
         local_filename="ai_visuals.json",
@@ -284,6 +293,23 @@ def load_ai_visuals_config(config_root: Path | str | None = None) -> dict[str, A
         config_root=config_root,
         coerce_bools={"enabled", "allow_local_comfyui", "allow_external_paid", "debug_prompts"},
     )
+    comfy = deepcopy(DEFAULT_AI_VISUALS_COMFYUI)
+    if isinstance(merged.get("comfyui"), dict):
+        comfy.update(merged["comfyui"])
+    endpoint = os.getenv("GENESIS_AI_VISUALS_COMFYUI_ENDPOINT_URL")
+    if endpoint:
+        comfy["endpoint_url"] = endpoint.strip()
+    workflow = os.getenv("GENESIS_AI_VISUALS_COMFYUI_WORKFLOW_PATH")
+    if workflow:
+        comfy["workflow_path"] = workflow.strip()
+    timeout = os.getenv("GENESIS_AI_VISUALS_COMFYUI_TIMEOUT_SECONDS")
+    if timeout:
+        try:
+            comfy["timeout_seconds"] = int(timeout)
+        except ValueError:
+            logger.warning("invalid GENESIS_AI_VISUALS_COMFYUI_TIMEOUT_SECONDS: %r", timeout)
+    merged["comfyui"] = comfy
+    return merged
 
 
 def elevenlabs_ready(config: dict[str, Any] | None = None) -> tuple[bool, str]:

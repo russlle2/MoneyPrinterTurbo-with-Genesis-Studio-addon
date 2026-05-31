@@ -62,6 +62,8 @@ def cmd_create(args: argparse.Namespace) -> int:
             "ai_visual_fill": getattr(args, "ai_visual_fill", False),
             "visual_provider": getattr(args, "visual_provider", "prompt_card_only"),
             "visual_asset_type": getattr(args, "visual_asset_type", ""),
+            "import_visuals": getattr(args, "import_visuals", False),
+            "manual_visuals_path": getattr(args, "manual_visuals_path", "") or "",
         },
         content_format=getattr(args, "content_format", "") or "",
         audience=getattr(args, "audience", "") or "",
@@ -164,6 +166,15 @@ def cmd_rerender(args: argparse.Namespace) -> int:
             provider_mode=getattr(args, "visual_provider", "prompt_card_only"),
         )
 
+    if getattr(args, "import_visuals", False) or getattr(args, "manual_visuals_path", ""):
+        from genesis.ai_visuals.manual_import import import_generated_visuals_for_run
+        paths = [getattr(args, "manual_visuals_path", "")] if getattr(args, "manual_visuals_path", "") else None
+        import_generated_visuals_for_run(
+            args.job_id,
+            runs_base=runs_base,
+            external_paths=paths,
+        )
+
     _header(f"Rerender: {args.job_id}")
     result = render_run_video(args.job_id, **kw)
     _print(f"  Status:  {result.status}")
@@ -230,6 +241,8 @@ def build_parser() -> argparse.ArgumentParser:
     cr.add_argument("--ai-visual-fill", dest="ai_visual_fill", action="store_true")
     cr.add_argument("--visual-provider", dest="visual_provider", default="prompt_card_only")
     cr.add_argument("--visual-asset-type", dest="visual_asset_type", default="")
+    cr.add_argument("--import-visuals", dest="import_visuals", action="store_true")
+    cr.add_argument("--manual-visuals-path", dest="manual_visuals_path", default="")
 
     sub.add_parser("templates", help="List available templates")
 
@@ -247,6 +260,8 @@ def build_parser() -> argparse.ArgumentParser:
     rr.add_argument("--no-motion-effects", action="store_true")
     rr.add_argument("--ai-visual-fill", dest="ai_visual_fill", action="store_true")
     rr.add_argument("--visual-provider", dest="visual_provider", default="prompt_card_only")
+    rr.add_argument("--import-visuals", dest="import_visuals", action="store_true")
+    rr.add_argument("--manual-visuals-path", dest="manual_visuals_path", default="")
 
     st = sub.add_parser("status", help="Show run status")
     st.add_argument("job_id")

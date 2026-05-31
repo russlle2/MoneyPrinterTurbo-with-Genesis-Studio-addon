@@ -7,5 +7,12 @@
   "allow_local_comfyui": false,
   "allow_external_paid": false,
   "output_dir": "generated_visuals",
-  "debug_prompts": false
+  "debug_prompts": false,
+  "comfyui": {
+    "endpoint_url": "http://127.0.0.1:8188",
+    "workflow_path": "genesis/config/comfyui_workflow.example.json",
+    "timeout_seconds": 180,
+    "poll_interval_seconds": 2,
+    "output_subdir": "comfyui"
+  }
 }
