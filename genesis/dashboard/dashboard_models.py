@@ -37,6 +37,9 @@ class DashboardRunCard:
     generated_visual_count: int = 0
     manual_import_count: int = 0
     validation_warning_count: int = 0
+    readiness_label: str = ""
+    quality_score: int = 0
+    quality_badge: str = ""
     warnings: list[str] = field(default_factory=list)
     suggested_commands: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -66,6 +69,9 @@ class DashboardRunCard:
             "generated_visual_count": self.generated_visual_count,
             "manual_import_count": self.manual_import_count,
             "validation_warning_count": self.validation_warning_count,
+            "readiness_label": self.readiness_label,
+            "quality_score": self.quality_score,
+            "quality_badge": self.quality_badge,
             "warnings": self.warnings,
             "suggested_commands": self.suggested_commands,
             "notes": self.notes,

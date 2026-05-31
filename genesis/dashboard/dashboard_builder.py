@@ -119,6 +119,37 @@ def read_export_status_safe(run_dir: Path, record_export_dir: str) -> dict[str, 
     return {"export_dir": export_dir, "has_export": has_export}
 
 
+def read_quality_status_safe(run_dir: Path) -> dict[str, Any]:
+    from genesis.quality.quality_report import load_ready_to_post_report, read_quality_badge
+
+    data = load_ready_to_post_report(run_dir) or {}
+    summary = _safe_json(run_dir / "creator_run_summary.json")
+    if not data and summary:
+        data = {
+            "readiness_label": summary.get("readiness_label", ""),
+            "score": summary.get("quality_score", 0),
+            "max_score": 100,
+        }
+    badge = read_quality_badge(run_dir)
+    label = data.get("readiness_label", "") or summary.get("readiness_label", "")
+    score = int(data.get("score", 0) or summary.get("quality_score", 0) or 0)
+    if badge and not label:
+        parts = badge.split("\u2014", 1) if "\u2014" in badge else badge.split("-", 1)
+        if parts:
+            label = parts[0].strip()
+        if len(parts) > 1 and "/" in parts[1]:
+            try:
+                score = int(parts[1].split("/")[0].strip())
+            except ValueError:
+                pass
+    return {
+        "readiness_label": label,
+        "quality_score": score,
+        "quality_badge": badge,
+        "has_quality_report": (run_dir / "ready_to_post_report.json").is_file(),
+    }
+
+
 def read_ai_visual_status_safe(run_dir: Path) -> dict[str, Any]:
     gvm = _safe_json(run_dir / "generated_visuals_manifest.json")
     validation_warns = 0
@@ -219,6 +250,7 @@ def build_run_card(
     has_audio = (run_dir / "mixed_audio.mp3").is_file()
     trans = read_transition_status_safe(run_dir)
     ai_vis = read_ai_visual_status_safe(run_dir)
+    quality = read_quality_status_safe(run_dir)
 
     warnings = _scrub_list(list(record.warnings))
     if media["placeholders"]:
@@ -250,10 +282,15 @@ def build_run_card(
         generated_visual_count=ai_vis.get("generated_visual_count", 0),
         manual_import_count=ai_vis.get("manual_import_count", 0),
         validation_warning_count=ai_vis.get("validation_warning_count", 0),
+        readiness_label=quality.get("readiness_label", ""),
+        quality_score=quality.get("quality_score", 0),
+        quality_badge=quality.get("quality_badge", ""),
         warnings=warnings[:8],
         notes=[],
     )
     card.suggested_commands = _suggested_commands(card)
+    plat = card.primary_platform or "tiktok"
+    brand = card.brand_preset or "clean_creator"
     if (
         ai_vis.get("missing_scene_count", 0)
         or ai_vis.get("has_fill_report")
@@ -265,6 +302,10 @@ def build_run_card(
             f"python -m genesis.ai_visuals.visual_cli import-and-render {card.job_id} "
             f"--platform {plat} --brand {brand}",
         )
+    card.suggested_commands.insert(
+        0,
+        f"python -m genesis.quality.quality_cli check {card.job_id} --platform {plat}",
+    )
     return card
 
 
@@ -347,7 +388,15 @@ def write_dashboard_html(
         if card.missing_scene_count:
             trans_line += f'<span class="badge warn">{card.missing_scene_count} missing</span> '
         if card.generated_visual_count:
-            trans_line += f'<span class="badge">{card.generated_visual_count} generated</span>'
+            trans_line += f'<span class="badge">{card.generated_visual_count} generated</span> '
+        if card.readiness_label:
+            qcls = "badge ok" if card.readiness_label == "READY_TO_POST" else (
+                "badge warn" if card.readiness_label == "NEEDS_REVIEW" else "badge fail"
+            )
+            trans_line += (
+                f'<span class="{qcls}">{_e(card.readiness_label)}'
+                f' {card.quality_score}/100</span> '
+            )
         ph_line = (
             f'<span class="badge warn">{card.placeholder_scene_count} placeholder(s)</span>'
             if card.placeholder_scene_count

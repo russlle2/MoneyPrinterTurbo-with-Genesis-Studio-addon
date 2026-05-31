@@ -193,6 +193,8 @@ def copy_export_files(
         "render_notes.md",
         "render_style.json",
         "caption_style.json",
+        "ready_to_post_report.md",
+        "ready_to_post_badge.txt",
     ]
     if include_video and (run_dir / "draft_video.mp4").is_file():
         safe_files.append("draft_video.mp4")

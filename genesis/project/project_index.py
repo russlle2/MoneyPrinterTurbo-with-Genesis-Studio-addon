@@ -57,6 +57,14 @@ def _record_from_creator_summary(run_dir: Path, summary: dict[str, Any]) -> Proj
     created = brief.get("created_at") or _mtime_str(run_dir / "brief.json") or _mtime_str(run_dir)
     updated = _mtime_str(run_dir / "creator_run_summary.json") or created
 
+    notes = _scrub_list(summary.get("notes") or [])
+    label = summary.get("readiness_label", "")
+    qscore = summary.get("quality_score")
+    if label:
+        notes.append(f"readiness={label}")
+    if qscore is not None and qscore != "":
+        notes.append(f"quality_score={qscore}")
+
     return ProjectRunRecord(
         job_id=summary.get("job_id") or run_dir.name,
         idea=idea,
@@ -72,7 +80,7 @@ def _record_from_creator_summary(run_dir: Path, summary: dict[str, Any]) -> Proj
         created_at=created,
         updated_at=updated,
         warnings=_scrub_list(summary.get("warnings") or []),
-        notes=_scrub_list(summary.get("notes") or []),
+        notes=notes,
     )
 
 

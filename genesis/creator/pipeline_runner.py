@@ -219,6 +219,8 @@ def write_creator_run_summary(
     run_dir: Path,
     result: CreatorRunResult,
     req: CreatorRunRequest,
+    *,
+    quality_info: dict | None = None,
 ) -> Path:
     doc = {
         "job_id": result.job_id,
@@ -234,6 +236,12 @@ def write_creator_run_summary(
         "warnings": result.warnings,
         "notes": result.notes,
     }
+    if quality_info:
+        doc["quality_score"] = quality_info.get("quality_score", 0)
+        doc["readiness_label"] = quality_info.get("readiness_label", "")
+        doc["quality_report_json"] = quality_info.get("quality_report_json", "")
+        doc["quality_report_md"] = quality_info.get("quality_report_md", "")
+        doc["quality_badge"] = quality_info.get("quality_badge", "")
     path = run_dir / "creator_run_summary.json"
     path.write_text(_safe_json_dump(doc), encoding="utf-8")
     return path
@@ -373,5 +381,46 @@ def run_creator_pipeline(
         warnings=list(dict.fromkeys(all_warnings)),
         notes=[f"template={req.template}", f"brand={req.brand_preset}"],
     )
-    write_creator_run_summary(run_dir, result, req)
+
+    quality_info: dict | None = None
+    if req.options.get("quality_check") or req.options.get("strict_quality_check"):
+        try:
+            from genesis.quality.readiness_scorer import evaluate_run_readiness
+            from genesis.quality.quality_models import ReadinessLabel
+
+            strict = bool(req.options.get("strict_quality_check"))
+            qr = evaluate_run_readiness(
+                job_id,
+                runs_base=runs_base,
+                platform=req.primary_platform or "tiktok",
+                strict_mode=strict,
+                require_export_package=req.export_enabled,
+            )
+            quality_info = {
+                "quality_score": qr.score,
+                "readiness_label": qr.readiness_label,
+                "quality_report_json": str(run_dir / "ready_to_post_report.json"),
+                "quality_report_md": str(run_dir / "ready_to_post_report.md"),
+                "quality_badge": str(run_dir / "ready_to_post_badge.txt"),
+            }
+            steps.append(CreatorRunStep(
+                step_name="quality_gate",
+                status=qr.readiness_label,
+                completed_at=_now(),
+                output_paths=[
+                    quality_info["quality_report_json"],
+                    quality_info["quality_report_md"],
+                ],
+                warnings=qr.blocking_issues[:3],
+                notes=[f"score={qr.score}"],
+            ))
+            all_warnings.extend(qr.blocking_issues[:2])
+            if strict and qr.readiness_label == ReadinessLabel.NOT_READY:
+                result.status = CreatorStatus.PARTIAL
+                status = CreatorStatus.PARTIAL
+        except Exception as exc:  # noqa: BLE001
+            steps.append(_step("quality_gate", CreatorStatus.PARTIAL, warnings=[str(exc)]))
+            all_warnings.append(f"quality gate: {exc}")
+
+    write_creator_run_summary(run_dir, result, req, quality_info=quality_info)
     return result

@@ -96,6 +96,14 @@ def cmd_show(args: argparse.Namespace) -> int:
     _print(f"  Timeline:      {'yes' if rs.has_timeline else 'no'}")
     _print(f"  Draft video:   {'yes — ' + rs.draft_video_path if rs.has_draft_video else 'no'}")
 
+    run_dir = Path(rs.run_dir) if rs.run_dir else None
+    if run_dir and (run_dir / "ready_to_post_report.json").is_file():
+        try:
+            q = json.loads((run_dir / "ready_to_post_report.json").read_text(encoding="utf-8"))
+            _print(f"  Quality:       {q.get('readiness_label', '?')} ({q.get('score', 0)}/{q.get('max_score', 100)})")
+        except Exception:  # noqa: BLE001
+            _print("  Quality:       report present (parse error)")
+
     if rs.warnings:
         _print("\n  Warnings:")
         for w in rs.warnings:
@@ -116,7 +124,6 @@ def cmd_show(args: argparse.Namespace) -> int:
         kb = f"{a.size_bytes // 1024}KB" if a.exists else "—"
         _print(f"  {mark} {a.asset_type:<22} {kb}")
 
-    run_dir = Path(rs.run_dir) if rs.run_dir else None
     if run_dir and run_dir.is_dir():
         report_path = run_dir / "review.html"
         write_html_report(

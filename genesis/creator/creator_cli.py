@@ -64,6 +64,8 @@ def cmd_create(args: argparse.Namespace) -> int:
             "visual_asset_type": getattr(args, "visual_asset_type", ""),
             "import_visuals": getattr(args, "import_visuals", False),
             "manual_visuals_path": getattr(args, "manual_visuals_path", "") or "",
+            "quality_check": getattr(args, "quality_check", False),
+            "strict_quality_check": getattr(args, "strict_quality_check", False),
         },
         content_format=getattr(args, "content_format", "") or "",
         audience=getattr(args, "audience", "") or "",
@@ -243,6 +245,8 @@ def build_parser() -> argparse.ArgumentParser:
     cr.add_argument("--visual-asset-type", dest="visual_asset_type", default="")
     cr.add_argument("--import-visuals", dest="import_visuals", action="store_true")
     cr.add_argument("--manual-visuals-path", dest="manual_visuals_path", default="")
+    cr.add_argument("--quality-check", dest="quality_check", action="store_true")
+    cr.add_argument("--strict-quality-check", dest="strict_quality_check", action="store_true")
 
     sub.add_parser("templates", help="List available templates")
 
