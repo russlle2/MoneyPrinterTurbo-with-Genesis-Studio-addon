@@ -141,6 +141,37 @@ def render_run_video(
         manifest_matches=manifest_matches,
     )
 
+    trim_notes: list[str] = []
+    try:
+        from genesis.video.timeline_refiner import refine_video_timeline, write_timeline_refinement
+        from genesis.video.clip_trimmer import write_trim_decisions, suggest_trims_for_manifest
+        from genesis.media.media_manifest import load_media_manifest
+        from genesis.video.timeline_builder import estimate_scene_durations
+
+        sp = storyboard.get("shot_plan", {})
+        scenes = sp.get("scenes", []) if isinstance(sp, dict) else []
+        mm = load_media_manifest(run_dir)
+        trims = []
+        td_path = run_dir / "trim_decisions.json"
+        if td_path.is_file():
+            td = _load_json(td_path)
+            from genesis.video.trim_models import ClipTrim
+            for row in td.get("trim_decisions") or []:
+                trims.append(ClipTrim(**{k: v for k, v in row.items() if k in ClipTrim.__dataclass_fields__}))
+        elif mm:
+            durs = estimate_scene_durations(scenes)
+            trims = suggest_trims_for_manifest(mm, scenes, durs)
+            write_trim_decisions(run_dir, trims, job_id)
+        if trims:
+            refinement = refine_video_timeline(timeline, trims=trims)
+            write_timeline_refinement(run_dir, refinement)
+            trim_notes = [f"{len(trims)} clip trim(s) applied"]
+            timeline.warnings = list(dict.fromkeys(timeline.warnings + refinement.warnings))
+    except Exception as exc:  # noqa: BLE001
+        trim_notes = [f"trim step skipped: {exc}"]
+
+    (run_dir / "timeline.json").write_text(timeline.to_json(), encoding="utf-8")
+
     caption_data = caption_timing_to_dict(timeline.captions, job_id)
     content_format = brief.get("content_format", "") or storyboard.get("content_format", "")
     disclosure_note = _fundraiser_disclosure_note(metadata)
@@ -159,6 +190,7 @@ def render_run_video(
         primary_hook=storyboard.get("primary_hook", ""),
         disclosure_note=disclosure_note,
         content_format=content_format,
+        trim_notes=trim_notes,
     )
 
     source_files = {

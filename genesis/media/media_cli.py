@@ -163,6 +163,63 @@ def cmd_report(args: argparse.Namespace) -> int:
     return 0
 
 
+# ─── trim ──────────────────────────────────────────────────────────────────────
+
+def cmd_trim(args: argparse.Namespace) -> int:
+    from genesis.video.timeline_refiner import run_trim_for_job
+
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", None) else None
+    repo_root = Path(args.repo_root) if getattr(args, "repo_root", None) else None
+    kw: dict = {}
+    if runs_base:
+        kw["runs_base"] = runs_base
+    if repo_root:
+        kw["repo_root"] = repo_root
+
+    _header(f"Trim: {args.job_id}")
+    trims, result = run_trim_for_job(args.job_id, **kw)
+    _print(f"  Trims: {len(trims)}")
+    if result:
+        _print(f"  Status: {result.status}")
+    _print(f"  Wrote trim_decisions.json")
+    return 0 if trims or result else 1
+
+
+# ─── ingest-trim-render ────────────────────────────────────────────────────────
+
+def cmd_ingest_trim_render(args: argparse.Namespace) -> int:
+    from genesis.media.ingest import ingest_folder_for_run
+    from genesis.media.media_manifest import run_full_match
+    from genesis.video.timeline_refiner import run_trim_for_job
+
+    runs_base = Path(args.runs_base) if getattr(args, "runs_base", None) else None
+    repo_root = Path(args.repo_root) if getattr(args, "repo_root", None) else None
+    kw: dict = dict(mode="copy")
+    if runs_base:
+        kw["runs_base"] = runs_base
+    if repo_root:
+        kw["repo_root"] = repo_root
+
+    _header(f"Ingest + trim + render: {args.job_id}")
+    result = ingest_folder_for_run(args.job_id, args.folder, **kw)
+    _print(f"  Ingested: {len(result.stored_assets)}")
+    mkw = {k: v for k, v in kw.items() if k in ("runs_base", "repo_root")}
+    run_full_match(args.job_id, **mkw)
+    trims, _ = run_trim_for_job(args.job_id, **mkw)
+    _print(f"  Trims: {len(trims)}")
+
+    rkw: dict = dict(
+        target_platform=getattr(args, "platform", "tiktok") or "tiktok",
+        brand_preset=getattr(args, "brand", "clean_creator") or "clean_creator",
+        render_enabled=True,
+    )
+    if runs_base:
+        rkw["runs_base"] = runs_base
+    render_result = render_run_video(args.job_id, **rkw)
+    _print(f"  Render: {render_result.status}")
+    return 0 if render_result.status in ("complete", "partial") else 1
+
+
 # ─── ingest-and-render ─────────────────────────────────────────────────────────
 
 def cmd_ingest_and_render(args: argparse.Namespace) -> int:
@@ -240,6 +297,15 @@ def build_parser() -> argparse.ArgumentParser:
     report_p = sub.add_parser("report", help="Print clip match report")
     report_p.add_argument("job_id")
 
+    trim_p = sub.add_parser("trim", help="Suggest trims and write trim_decisions.json")
+    trim_p.add_argument("job_id")
+
+    itr_p = sub.add_parser("ingest-trim-render", help="Ingest, match, trim, render")
+    itr_p.add_argument("job_id")
+    itr_p.add_argument("folder")
+    itr_p.add_argument("--platform", default="tiktok")
+    itr_p.add_argument("--brand", default="clean_creator")
+
     iar_p = sub.add_parser("ingest-and-render", help="Ingest, match, then render")
     iar_p.add_argument("job_id")
     iar_p.add_argument("folder")
@@ -260,6 +326,8 @@ def main(argv: list[str] | None = None) -> int:
         "ingest-folder": cmd_ingest_folder,
         "match": cmd_match,
         "report": cmd_report,
+        "trim": cmd_trim,
+        "ingest-trim-render": cmd_ingest_trim_render,
         "ingest-and-render": cmd_ingest_and_render,
     }
     if not args.command:

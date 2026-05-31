@@ -236,10 +236,23 @@ def _clip_for_timeline_item(
         return _overlay_captions_on_clip(clip, item, ctx, size)
 
     if media_type == "video":
-        clip = VideoFileClip(str(src), audio=False)
-        clip = clip.subclipped(0, min(dur, clip.duration))
-        clip = clip.resized(size).with_duration(dur)
-        return _overlay_captions_on_clip(clip, item, ctx, size)
+        try:
+            clip = VideoFileClip(str(src), audio=False)
+            src_start = float(getattr(item, "source_start", 0) or 0)
+            src_end = float(getattr(item, "source_end", 0) or 0)
+            if src_end > src_start > 0:
+                use_end = min(src_end, clip.duration or src_end)
+                clip = clip.subclipped(src_start, use_end)
+            else:
+                clip = clip.subclipped(0, min(dur, clip.duration or dur))
+            clip = clip.resized(size).with_duration(dur)
+            return _overlay_captions_on_clip(clip, item, ctx, size)
+        except Exception as exc:  # noqa: BLE001
+            png_path = cache_dir / f"{item.scene_id}_trim_fail.png"
+            _ensure_card_png(ctx, png_path, item, scene_index=scene_index)
+            item.warnings = list(getattr(item, "warnings", [])) + [f"trim failed: {exc}"]
+            clip = ImageClip(str(png_path)).with_duration(dur).resized(size)
+            return _overlay_captions_on_clip(clip, item, ctx, size)
 
     if media_type == "image":
         clip = ImageClip(str(src)).with_duration(dur).resized(size)
@@ -376,6 +389,7 @@ def _build_render_notes(
     renderer: str,
     output_name: str = "",
     reason: str = "",
+    trim_notes: list[str] | None = None,
 ) -> str:
     preset = ctx.preset
     opts = ctx.options
@@ -416,6 +430,17 @@ def _build_render_notes(
         f"- End card: {'on' if opts.end_card_enabled else 'off'}",
         f"- Scene cards: {'on' if opts.scene_cards_enabled else 'off'}",
         "",
+        "## Trim",
+        "",
+    ])
+    if trim_notes:
+        for n in trim_notes:
+            lines.append(f"- {n}")
+        lines.append("- See `trim_decisions.json` and `timeline_refinement.json`")
+    else:
+        lines.append("- No clip trims applied")
+    lines.extend([
+        "",
         "## Export quality",
         "",
     ])
@@ -429,6 +454,8 @@ def _build_render_notes(
         "- `caption_style.json`",
         "- `timeline.json`",
         "- `caption_timing.json`",
+        "- `trim_decisions.json`",
+        "- `timeline_refinement.json`",
         "- `export_manifest.json`",
     ])
     if output_name:
@@ -489,6 +516,7 @@ def render_video_timeline(
     primary_hook: str = "",
     disclosure_note: str = "",
     content_format: str = "",
+    trim_notes: list[str] | None = None,
 ) -> RenderResult:
     """Render draft MP4 or write partial package."""
     options = RenderOptions(
@@ -544,7 +572,8 @@ def render_video_timeline(
         notes_path = run_dir / "render_notes.md"
         notes_path.write_text(
             _build_render_notes(
-                timeline, ctx, status="complete", renderer="moviepy", output_name="draft_video.mp4"
+                timeline, ctx, status="complete", renderer="moviepy",
+                output_name="draft_video.mp4", trim_notes=trim_notes,
             ),
             encoding="utf-8",
         )

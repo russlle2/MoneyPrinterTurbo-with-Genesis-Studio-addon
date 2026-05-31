@@ -38,6 +38,8 @@ def build_export_manifest(
         "caption_timing.json",
         "render_style.json",
         "caption_style.json",
+        "trim_decisions.json",
+        "timeline_refinement.json",
         "render_notes.md",
         "export_manifest.json",
         "draft_video.mp4",
@@ -67,6 +69,8 @@ def build_export_manifest(
         "caption_timing_path": "caption_timing.json",
         "render_style_path": "render_style.json" if (run_dir / "render_style.json").exists() else "",
         "caption_style_path": "caption_style.json" if (run_dir / "caption_style.json").exists() else "",
+        "trim_decisions_path": "trim_decisions.json" if (run_dir / "trim_decisions.json").exists() else "",
+        "timeline_refinement_path": "timeline_refinement.json" if (run_dir / "timeline_refinement.json").exists() else "",
         "render_style_summary": {
             "brand_preset": render_style.get("brand_preset", brand_preset),
             "features": render_style.get("features", {}),

@@ -29,9 +29,13 @@ class TimelineClip:
     caption_text: str = ""
     notes: str = ""
     warnings: list[str] = field(default_factory=list)
+    source_start: float = 0.0
+    source_end: float = 0.0
+    playback_speed: float = 1.0
+    trim_reason: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d: dict[str, Any] = {
             "clip_id": self.clip_id,
             "scene_id": self.scene_id,
             "source_path": self.source_path,
@@ -44,6 +48,14 @@ class TimelineClip:
             "notes": self.notes,
             "warnings": self.warnings,
         }
+        if self.source_end > self.source_start:
+            d["source_start"] = self.source_start
+            d["source_end"] = self.source_end
+        if self.playback_speed != 1.0:
+            d["playback_speed"] = self.playback_speed
+        if self.trim_reason:
+            d["trim_reason"] = self.trim_reason
+        return d
 
 
 @dataclass
