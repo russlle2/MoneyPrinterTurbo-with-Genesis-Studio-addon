@@ -390,6 +390,7 @@ def _build_render_notes(
     output_name: str = "",
     reason: str = "",
     trim_notes: list[str] | None = None,
+    audio_notes: list[str] | None = None,
 ) -> str:
     preset = ctx.preset
     opts = ctx.options
@@ -439,6 +440,12 @@ def _build_render_notes(
         lines.append("- See `trim_decisions.json` and `timeline_refinement.json`")
     else:
         lines.append("- No clip trims applied")
+    lines.extend(["", "## Audio mix", ""])
+    if audio_notes:
+        for n in audio_notes:
+            lines.append(f"- {n}")
+    else:
+        lines.append("- No audio mix applied")
     lines.extend([
         "",
         "## Export quality",
@@ -456,6 +463,9 @@ def _build_render_notes(
         "- `caption_timing.json`",
         "- `trim_decisions.json`",
         "- `timeline_refinement.json`",
+        "- `audio_manifest.json`",
+        "- `audio_mix_plan.json`",
+        "- `mixed_audio.mp3`",
         "- `export_manifest.json`",
     ])
     if output_name:
@@ -517,6 +527,7 @@ def render_video_timeline(
     disclosure_note: str = "",
     content_format: str = "",
     trim_notes: list[str] | None = None,
+    audio_notes: list[str] | None = None,
 ) -> RenderResult:
     """Render draft MP4 or write partial package."""
     options = RenderOptions(
@@ -573,7 +584,7 @@ def render_video_timeline(
         notes_path.write_text(
             _build_render_notes(
                 timeline, ctx, status="complete", renderer="moviepy",
-                output_name="draft_video.mp4", trim_notes=trim_notes,
+                output_name="draft_video.mp4", trim_notes=trim_notes, audio_notes=audio_notes,
             ),
             encoding="utf-8",
         )

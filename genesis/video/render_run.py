@@ -59,6 +59,11 @@ def render_run_video(
     scene_cards_enabled: bool = True,
     runs_base: Path | None = None,
     narration_path: str = "",
+    audio_mix_enabled: bool = True,
+    music_path: str | None = None,
+    music_volume: float = 0.18,
+    narration_volume: float = 1.0,
+    duck_music: bool = True,
 ) -> RenderResult:
     """
     Load run package, build timeline, render draft MP4 (or partial package).
@@ -172,6 +177,48 @@ def render_run_video(
 
     (run_dir / "timeline.json").write_text(timeline.to_json(), encoding="utf-8")
 
+    audio_notes: list[str] = []
+    if audio_mix_enabled and narr:
+        try:
+            from genesis.audio.audio_models import AudioMixSettings
+            from genesis.audio.audio_mixer import run_audio_mix_for_job
+            from genesis.audio.audio_manifest import build_audio_manifest, write_audio_manifest
+            from genesis.audio.audio_inspector import inspect_audio_file
+
+            settings = AudioMixSettings(
+                narration_volume=narration_volume,
+                music_volume=music_volume,
+                duck_music_under_voice=duck_music,
+            )
+            mix_result = run_audio_mix_for_job(
+                job_id,
+                narration_rel=narr,
+                run_dir=run_dir,
+                repo_root=_REPO_ROOT,
+                music_path=music_path,
+                settings=settings,
+                allow_global_music=bool(music_path),
+                target_duration=timeline.duration or 0.0,
+            )
+            narr_p = _REPO_ROOT / narr if narr and not Path(narr).is_absolute() else Path(narr or "")
+            narr_asset = inspect_audio_file(narr_p) if narr_p.is_file() else None
+            write_audio_manifest(run_dir, build_audio_manifest(job_id, narration=narr_asset, mix_result=mix_result))
+            if mix_result.output_path and mix_result.status in ("complete", "partial"):
+                narr = mix_result.output_path
+                if timeline.audio_tracks:
+                    timeline.audio_tracks[0].source_path = narr
+                audio_notes = [
+                    f"Audio mix: {mix_result.status}",
+                    f"Narration volume: {narration_volume}",
+                    f"Music: {'yes' if any(p.track_type == 'music' for p in mix_result.track_plans) else 'no'}",
+                    f"Ducking: {'on' if duck_music else 'off'}",
+                    "Output: mixed_audio.mp3",
+                ]
+            else:
+                audio_notes = ["Audio mix failed; using narration only", *mix_result.warnings[:3]]
+        except Exception as exc:  # noqa: BLE001
+            audio_notes = [f"audio mix skipped: {exc}"]
+
     caption_data = caption_timing_to_dict(timeline.captions, job_id)
     content_format = brief.get("content_format", "") or storyboard.get("content_format", "")
     disclosure_note = _fundraiser_disclosure_note(metadata)
@@ -191,6 +238,7 @@ def render_run_video(
         disclosure_note=disclosure_note,
         content_format=content_format,
         trim_notes=trim_notes,
+        audio_notes=audio_notes,
     )
 
     source_files = {

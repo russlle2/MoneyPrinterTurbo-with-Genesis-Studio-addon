@@ -40,6 +40,9 @@ def build_export_manifest(
         "caption_style.json",
         "trim_decisions.json",
         "timeline_refinement.json",
+        "audio_manifest.json",
+        "audio_mix_plan.json",
+        "mixed_audio.mp3",
         "render_notes.md",
         "export_manifest.json",
         "draft_video.mp4",
@@ -71,6 +74,8 @@ def build_export_manifest(
         "caption_style_path": "caption_style.json" if (run_dir / "caption_style.json").exists() else "",
         "trim_decisions_path": "trim_decisions.json" if (run_dir / "trim_decisions.json").exists() else "",
         "timeline_refinement_path": "timeline_refinement.json" if (run_dir / "timeline_refinement.json").exists() else "",
+        "audio_manifest_path": "audio_manifest.json" if (run_dir / "audio_manifest.json").exists() else "",
+        "mixed_audio_path": "mixed_audio.mp3" if (run_dir / "mixed_audio.mp3").exists() else "",
         "render_style_summary": {
             "brand_preset": render_style.get("brand_preset", brand_preset),
             "features": render_style.get("features", {}),
