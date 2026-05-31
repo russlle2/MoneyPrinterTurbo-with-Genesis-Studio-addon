@@ -100,16 +100,37 @@ def find_run_media_assets(
 def match_assets_to_scenes(
     scenes: list[dict[str, Any]],
     assets: list[MediaAsset],
+    *,
+    manifest_matches: dict[str, str] | None = None,
 ) -> dict[str, MediaAsset]:
-    """Map scene_id → best visual asset (video/image only)."""
+    """Map scene_id → best visual asset (video/image only).
+
+    If manifest_matches is provided (scene_id → stored_path from media_manifest),
+    those assignments take priority over filename-hint matching.
+    """
     visual = [a for a in assets if a.media_type in ("video", "image")]
     by_scene: dict[str, MediaAsset] = {}
 
+    # 1. Prefer manifest-based scene matches when available
+    if manifest_matches:
+        path_index = {a.path: a for a in visual}
+        for sid, stored_path in manifest_matches.items():
+            # stored_path may be relative repo path; match by basename or full path
+            from pathlib import Path as _Path
+            basename = _Path(stored_path).name
+            hit = path_index.get(stored_path)
+            if hit is None:
+                hit = next((a for a in visual if a.basename == basename), None)
+            if hit:
+                by_scene[sid] = hit
+
+    # 2. Filename scene-hint fallback
     for asset in visual:
         if asset.scene_hint:
             by_scene.setdefault(asset.scene_hint, asset)
 
-    unassigned = [a for a in visual if a.scene_hint not in by_scene.values()]
+    # 3. Positional fallback
+    unassigned = [a for a in visual if a not in by_scene.values()]
     for i, scene in enumerate(scenes):
         sid = scene.get("scene_id", f"scene_{i+1:02d}")
         if sid in by_scene:

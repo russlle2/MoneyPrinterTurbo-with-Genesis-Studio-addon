@@ -164,6 +164,7 @@ def build_video_timeline(
     repo_root: Path | None = None,
     target_platform: str = "tiktok",
     target_duration: float | None = None,
+    manifest_matches: dict[str, str] | None = None,
 ) -> VideoTimeline:
     """Assemble VideoTimeline from run package data."""
     repo_root = repo_root or Path(__file__).resolve().parents[2]
@@ -194,7 +195,9 @@ def build_video_timeline(
     if narration_dur > 0:
         scene_durs = align_narration_to_scenes(narration_dur, scene_durs)
 
-    asset_map = match_assets_to_scenes(scenes, media_assets or [])
+    asset_map = match_assets_to_scenes(
+        scenes, media_assets or [], manifest_matches=manifest_matches
+    )
     ph_plan = create_placeholder_visuals_if_needed(
         run_dir or (repo_root / "assets" / "runs" / job_id),
         scenes,

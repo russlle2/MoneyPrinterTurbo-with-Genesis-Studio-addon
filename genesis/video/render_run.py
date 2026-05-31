@@ -15,7 +15,7 @@ from genesis.video.export_manifest import (
     validate_export_manifest,
     write_export_manifest,
 )
-from genesis.video.media_resolver import find_run_media_assets, resolve_narration_path
+from genesis.video.media_resolver import find_run_media_assets, resolve_narration_path, match_assets_to_scenes
 from genesis.video.simple_renderer import render_video_timeline
 from genesis.video.timeline_builder import build_video_timeline
 from genesis.video.timeline_models import RenderResult, TimelineStatus
@@ -111,6 +111,23 @@ def render_run_video(
     )
     media = find_run_media_assets(run_dir, repo_root=_REPO_ROOT)
 
+    # Prefer media_manifest.json scene assignments when available
+    manifest_matches: dict[str, str] | None = None
+    media_manifest_path = run_dir / "media_manifest.json"
+    if media_manifest_path.is_file():
+        try:
+            mm_data = _load_json(media_manifest_path)
+            scene_matches = mm_data.get("scene_matches") or []
+            manifest_matches = {
+                m["scene_id"]: m["selected_assets"][0]
+                for m in scene_matches
+                if m.get("selected_assets") and not m.get("fallback_needed")
+            }
+            if manifest_matches:
+                logger.info("render_run_video job=%s using media_manifest (%d scene assignments)", job_id, len(manifest_matches))
+        except Exception:  # noqa: BLE001
+            manifest_matches = None
+
     timeline = build_video_timeline(
         job_id=job_id,
         storyboard=storyboard,
@@ -121,6 +138,7 @@ def render_run_video(
         run_dir=run_dir,
         repo_root=_REPO_ROOT,
         target_platform=target_platform,
+        manifest_matches=manifest_matches,
     )
 
     caption_data = caption_timing_to_dict(timeline.captions, job_id)
