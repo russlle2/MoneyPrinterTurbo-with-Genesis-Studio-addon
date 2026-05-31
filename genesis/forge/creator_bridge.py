@@ -92,6 +92,26 @@ _LEADING_DEMO = re.compile(
     r"^(?:this|that|these|those|my|your|our|his|her|its|their)\s+",
     re.I,
 )
+# Technical production specs that are directives, not filmable subjects.
+# e.g. "cinematic 9:16 aspect ratio", "4k", "60fps"
+_TECH_SPEC_STRIP = re.compile(
+    r"[,.]?\s*\b\d+:\d+\b\s*(?:aspect\s+ratio\b)?"   # "9:16" or "9:16 aspect ratio"
+    r"|[,.]?\s*\baspect\s+ratio\b"                      # lone "aspect ratio"
+    r"|[,.]?\s*\b(?:4k|8k|1080p|720p|2160p)\b"
+    r"|[,.]?\s*\b\d+\s*fps\b",
+    re.I,
+)
+# "stunning visual story / cinematic journey" narrative-framing openers —
+# they describe the *format* of the video, not what should be in the frame.
+_NARRATIVE_OPENER = re.compile(
+    r"^(?:a\s+|an\s+)?(?:stunning|beautiful|breathtaking|epic|amazing|dramatic|"
+    r"powerful|incredible)\s+"
+    r"(?:(?:and\s+)?(?:cinematic|visual|immersive)\s+)?"
+    r"(?:story|journey|narrative|sequence|experience|tale|montage)\s+"
+    r"(?:(?:of|about|through|showing|featuring|that\s+)\s*)?"
+    r"(?:transitioning\s+)?",
+    re.I,
+)
 _LEADING_FILLER = re.compile(
     r"^(?:be|being|to\s+be|that\s+(?:show|shows|are|is)|how\s+to|the\s+importance\s+of)\s+",
     re.I,
@@ -117,6 +137,43 @@ def _is_style_only(phrase: str) -> bool:
     return bool(words) and all(w in _STYLE_WORDS for w in words)
 
 
+def _strip_directives(text: str) -> str:
+    """Remove tech specs and narrative-framing openers so subjects are clean."""
+    t = _TECH_SPEC_STRIP.sub("", text).strip()
+    t = _NARRATIVE_OPENER.sub("", t).strip()
+    return t
+
+
+def _parse_location_transitions(text: str) -> list[str] | None:
+    """
+    Detect 'from X to Y (to Z …)' narrative-transition patterns and return
+    the ordered list of environment/location subjects.
+
+    Returns None if no clear multi-location transition is found.
+    """
+    m = re.search(r'(?:transitioning\s+)?from\s+(.+)', text, re.I)
+    if not m:
+        return None
+    remainder = m.group(1).strip()
+    parts = re.split(r'\s+to\s+', remainder, flags=re.I)
+    subjects: list[str] = []
+    for p in parts:
+        p = p.strip()
+        # Strip tech specs embedded in this part.
+        p = _TECH_SPEC_STRIP.sub("", p).strip()
+        # Take only the first sentence — anything after a period is usually
+        # a style note ("sahara desert. cinematic" → "sahara desert").
+        p = re.split(r'\.\s+', p)[0].rstrip('.,;:!?').strip()
+        # Strip trailing lone style/mood words that bled in.
+        words = p.split()
+        while words and words[-1].lower() in _STYLE_WORDS:
+            words.pop()
+        p = " ".join(words).strip()
+        if len(p.split()) >= 2 and not _is_style_only(p):
+            subjects.append(p)
+    return subjects if len(subjects) >= 2 else None
+
+
 def _detect_mood_lighting(idea: str, default: str) -> str:
     for pat, lighting in _MOOD_HINTS:
         if pat.search(idea):
@@ -126,18 +183,30 @@ def _detect_mood_lighting(idea: str, default: str) -> str:
 
 def _extract_scene_subjects(idea: str) -> list[str]:
     """
-    Split a natural-language idea into visual subject phrases, robustly.
+    Split a natural-language idea into filmable subject phrases, robustly.
 
-    Strips meta "make a video" framing and editor-direction clauses, keeps the
-    real content (including subjects introduced by "show scenes of ...").
+    Priority order:
+      1. "from X to Y to Z" transition → ordered environment list
+      2. Generic sentence/clause splitting with direction/style-word filtering
+
+    Tech-spec directives ("9:16 aspect ratio", "4k") and narrative-framing
+    openers ("stunning visual story transitioning…") are stripped first so they
+    never appear as subjects.
     """
     from genesis.creative.idea_normalizer import clean_topic_phrase
 
-    text = clean_topic_phrase(idea)
-    # Normalize "show scenes of X" -> "X"
-    text = _SHOW_SCENES_OF.sub("", text)
+    # Strip production directives before any other processing.
+    clean_idea = _strip_directives(idea)
+    text = clean_topic_phrase(clean_idea)
+    text = _strip_directives(text)          # catch anything clean_topic_phrase exposed
+    text = _SHOW_SCENES_OF.sub("", text).strip()
 
-    # Split into candidate phrases on sentence/clause boundaries.
+    # --- Priority 1: "from X to Y (to Z)" ordered-location transitions ---
+    transition = _parse_location_transitions(text)
+    if transition:
+        return transition
+
+    # --- Priority 2: generic clause splitting ---
     raw_parts = re.split(r"[.;\n]+|\s+\band\b\s+|,\s+", text)
     # Expand comparison hooks so each compared item becomes its own subject.
     expanded: list[str] = []
@@ -220,14 +289,26 @@ def plan_forge_video(
 
     duration_seconds = max(5.0, float(duration_seconds or 30.0))
     if n_scenes is None:
-        n_scenes = max(3, min(8, round(duration_seconds / 4.0)))
+        # Scale cap with duration: ~4 s/scene, max 15 for longer videos.
+        n_scenes = max(3, min(15, round(duration_seconds / 4.0)))
     n_scenes = max(1, int(n_scenes))
     scene_duration = round(duration_seconds / n_scenes, 2)
+
+    # Narrative-arc mode: when subjects come from an ordered transition
+    # ("from X to Y to Z"), distribute scenes in sequential blocks so the
+    # video actually journeys through each environment in order.
+    _stripped = _strip_directives(idea)
+    _is_arc = len(subjects) >= 2 and _parse_location_transitions(_stripped) is not None
 
     animations = ["ken_burns", "zoom_in", "pan_right", "zoom_out", "pan_left"]
     scenes: list[dict[str, Any]] = []
     for i in range(n_scenes):
-        subject = subjects[i % len(subjects)]
+        if _is_arc:
+            # Proportional block: subject 0 fills first slice, subject 1 the next, etc.
+            subj_idx = min(int(i * len(subjects) / n_scenes), len(subjects) - 1)
+            subject = subjects[subj_idx]
+        else:
+            subject = subjects[i % len(subjects)]
         beat_tmpl = _BEAT_FRAMINGS[i % len(_BEAT_FRAMINGS)]
         beat = beat_tmpl.format(subj=subject)
         prompt = (
