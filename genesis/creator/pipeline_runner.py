@@ -160,6 +160,7 @@ def render_video_step(
 ) -> CreatorRunStep:
     runs_base = runs_base or _RUNS_BASE
     try:
+        tp = req.options.get("transition_preset", "auto") if req.options else "auto"
         result = render_run_video(
             req.job_id,
             target_platform=req.primary_platform or "tiktok",
@@ -168,6 +169,9 @@ def render_video_step(
             audio_mix_enabled=bool(req.music_path or (runs_base / req.job_id / "music").is_dir()),
             music_path=req.music_path or None,
             runs_base=runs_base,
+            transition_preset=str(tp),
+            beat_sync_enabled=req.options.get("beat_sync_enabled", True) if req.options else True,
+            motion_effects_enabled=req.options.get("motion_effects_enabled", True) if req.options else True,
         )
         run_dir = runs_base / req.job_id
         outputs = [str(run_dir / "draft_video.mp4")] if result.output_path else []

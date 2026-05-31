@@ -43,6 +43,8 @@ def build_export_manifest(
         "audio_manifest.json",
         "audio_mix_plan.json",
         "mixed_audio.mp3",
+        "transition_plan.json",
+        "beat_timing.json",
         "render_notes.md",
         "export_manifest.json",
         "draft_video.mp4",
@@ -76,6 +78,8 @@ def build_export_manifest(
         "timeline_refinement_path": "timeline_refinement.json" if (run_dir / "timeline_refinement.json").exists() else "",
         "audio_manifest_path": "audio_manifest.json" if (run_dir / "audio_manifest.json").exists() else "",
         "mixed_audio_path": "mixed_audio.mp3" if (run_dir / "mixed_audio.mp3").exists() else "",
+        "transition_plan_path": "transition_plan.json" if (run_dir / "transition_plan.json").exists() else "",
+        "beat_timing_path": "beat_timing.json" if (run_dir / "beat_timing.json").exists() else "",
         "render_style_summary": {
             "brand_preset": render_style.get("brand_preset", brand_preset),
             "features": render_style.get("features", {}),

@@ -64,6 +64,10 @@ def render_run_video(
     music_volume: float = 0.18,
     narration_volume: float = 1.0,
     duck_music: bool = True,
+    transition_preset: str = "auto",
+    beat_sync_enabled: bool = True,
+    motion_effects_enabled: bool = True,
+    transition_duration: float | None = None,
 ) -> RenderResult:
     """
     Load run package, build timeline, render draft MP4 (or partial package).
@@ -223,6 +227,60 @@ def render_run_video(
     content_format = brief.get("content_format", "") or storyboard.get("content_format", "")
     disclosure_note = _fundraiser_disclosure_note(metadata)
 
+    transition_notes: list[str] = []
+    transition_plan = None
+    try:
+        from genesis.video.pacing_engine import (
+            adjust_scene_pacing,
+            build_transition_plan,
+            write_beat_timing,
+            write_transition_plan,
+        )
+        from genesis.video.transition_presets import resolve_transition_preset
+
+        beat_music_path = music_path or ""
+        if not beat_music_path:
+            amp = _load_json(run_dir / "audio_mix_plan.json")
+            for tp in amp.get("track_plans") or []:
+                if tp.get("track_type") == "music" and tp.get("source_path"):
+                    beat_music_path = tp["source_path"]
+                    break
+
+        resolved = resolve_transition_preset(
+            transition_preset, brand_preset=brand_preset, content_format=content_format,
+        )
+        transition_plan = build_transition_plan(
+            timeline,
+            preset_name=transition_preset,
+            brand_preset=brand_preset,
+            content_format=content_format,
+            beat_sync_enabled=beat_sync_enabled,
+            music_audio_path=beat_music_path if beat_sync_enabled else "",
+            repo_root=_REPO_ROOT,
+            transition_duration=transition_duration,
+        )
+        pacing_warnings = adjust_scene_pacing(timeline, transition_plan.pacing_decisions)
+        transition_plan.warnings = list(dict.fromkeys(transition_plan.warnings + pacing_warnings))
+        write_transition_plan(run_dir, transition_plan)
+        if transition_plan.beat_timing:
+            write_beat_timing(run_dir, transition_plan.beat_timing)
+        (run_dir / "timeline.json").write_text(timeline.to_json(), encoding="utf-8")
+        transition_notes = [
+            f"Transition preset: {resolved.name} ({resolved.default_transition_type})",
+            f"Beat sync: {'on' if beat_sync_enabled else 'off'}",
+            f"Motion effects: {'on' if motion_effects_enabled else 'off'}",
+            f"Transitions between scenes: {len(transition_plan.transitions)}",
+        ]
+        if transition_plan.beat_timing:
+            transition_notes.append(
+                f"Beat timing: {transition_plan.beat_timing.status} "
+                f"(BPM ~{transition_plan.beat_timing.estimated_bpm:.0f}, "
+                f"confidence {transition_plan.beat_timing.confidence:.2f})"
+            )
+        transition_notes.extend(transition_plan.warnings[:3])
+    except Exception as exc:  # noqa: BLE001
+        transition_notes = [f"transition plan skipped: {exc}"]
+
     render_result = render_video_timeline(
         timeline,
         run_dir,
@@ -239,6 +297,12 @@ def render_run_video(
         content_format=content_format,
         trim_notes=trim_notes,
         audio_notes=audio_notes,
+        transition_preset=transition_preset,
+        beat_sync_enabled=beat_sync_enabled,
+        motion_effects_enabled=motion_effects_enabled,
+        transition_duration=transition_duration,
+        transition_plan=transition_plan,
+        transition_notes=transition_notes,
     )
 
     source_files = {

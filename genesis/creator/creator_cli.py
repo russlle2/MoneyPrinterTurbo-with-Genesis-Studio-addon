@@ -144,6 +144,9 @@ def cmd_rerender(args: argparse.Namespace) -> int:
         music_path=getattr(args, "music", "") or None,
         music_volume=float(getattr(args, "music_volume", 0.18) or 0.18),
         render_enabled=True,
+        transition_preset=getattr(args, "transition_preset", "auto") or "auto",
+        beat_sync_enabled=not getattr(args, "no_beat_sync", False),
+        motion_effects_enabled=not getattr(args, "no_motion_effects", False),
     )
     if runs_base:
         kw["runs_base"] = runs_base
@@ -223,6 +226,9 @@ def build_parser() -> argparse.ArgumentParser:
     rr.add_argument("--brand", default="clean_creator")
     rr.add_argument("--music", default="")
     rr.add_argument("--music-volume", dest="music_volume", type=float, default=0.18)
+    rr.add_argument("--transition-preset", dest="transition_preset", default="auto")
+    rr.add_argument("--no-beat-sync", action="store_true")
+    rr.add_argument("--no-motion-effects", action="store_true")
 
     st = sub.add_parser("status", help="Show run status")
     st.add_argument("job_id")

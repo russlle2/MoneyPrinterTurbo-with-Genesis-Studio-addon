@@ -31,6 +31,8 @@ class DashboardRunCard:
     placeholder_scene_count: int
     has_audio_mix: bool
     has_export: bool
+    transition_preset: str = ""
+    beat_sync_status: str = ""
     warnings: list[str] = field(default_factory=list)
     suggested_commands: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -54,6 +56,8 @@ class DashboardRunCard:
             "placeholder_scene_count": self.placeholder_scene_count,
             "has_audio_mix": self.has_audio_mix,
             "has_export": self.has_export,
+            "transition_preset": self.transition_preset,
+            "beat_sync_status": self.beat_sync_status,
             "warnings": self.warnings,
             "suggested_commands": self.suggested_commands,
             "notes": self.notes,

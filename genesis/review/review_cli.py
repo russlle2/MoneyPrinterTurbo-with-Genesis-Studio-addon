@@ -142,6 +142,9 @@ def cmd_render(args: argparse.Namespace) -> int:
         title_card_enabled=not getattr(args, "no_title_card", False),
         end_card_enabled=not getattr(args, "no_end_card", False),
         scene_cards_enabled=not getattr(args, "no_scene_cards", False),
+        transition_preset=getattr(args, "transition_preset", "auto") or "auto",
+        beat_sync_enabled=not getattr(args, "no_beat_sync", False),
+        motion_effects_enabled=not getattr(args, "no_motion_effects", False),
     )
     if runs_base:
         kw["runs_base"] = runs_base
@@ -271,6 +274,9 @@ def build_parser() -> argparse.ArgumentParser:
     render_p.add_argument("--no-title-card", action="store_true", dest="no_title_card")
     render_p.add_argument("--no-end-card", action="store_true", dest="no_end_card")
     render_p.add_argument("--no-scene-cards", action="store_true", dest="no_scene_cards")
+    render_p.add_argument("--transition-preset", dest="transition_preset", default="auto")
+    render_p.add_argument("--no-beat-sync", action="store_true")
+    render_p.add_argument("--no-motion-effects", action="store_true")
 
     export_p = sub.add_parser("export", help="Build a platform export package")
     export_p.add_argument("job_id")

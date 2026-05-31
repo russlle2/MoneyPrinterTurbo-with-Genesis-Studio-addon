@@ -112,6 +112,8 @@ class RenderOptions:
     fps: int = 30
     simple_transitions: bool = True
     transition_duration: float = 0.12
+    transition_preset: str = "auto"
+    motion_effects_enabled: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -124,6 +126,8 @@ class RenderOptions:
             "fps": self.fps,
             "simple_transitions": self.simple_transitions,
             "transition_duration": self.transition_duration,
+            "transition_preset": self.transition_preset,
+            "motion_effects_enabled": self.motion_effects_enabled,
         }
 
 
@@ -150,6 +154,8 @@ def write_render_style_artifacts(
             "end_card_enabled": options.end_card_enabled,
             "scene_cards_enabled": options.scene_cards_enabled,
             "simple_transitions": options.simple_transitions,
+            "transition_preset": options.transition_preset,
+            "motion_effects_enabled": options.motion_effects_enabled,
         },
         "notes": preset.notes,
     }

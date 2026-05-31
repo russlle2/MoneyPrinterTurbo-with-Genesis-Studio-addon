@@ -39,6 +39,7 @@ class RenderContext:
     primary_hook: str = ""
     disclosure_note: str = ""
     content_format: str = ""
+    transition_plan: Any = None
 
 
 def renderer_available() -> bool:
@@ -202,6 +203,20 @@ def _clip_for_timeline_item(
     cache_dir = repo_root / "assets" / "runs" / job_id / "render_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    def _maybe_motion(base_clip: Any) -> Any:
+        from genesis.video.motion_effects import apply_basic_motion_effect
+        clip_out, mw = apply_basic_motion_effect(
+            base_clip,
+            item,
+            brand_preset=ctx.preset.preset_name,
+            transition_preset=ctx.options.transition_preset,
+            motion_enabled=ctx.options.motion_effects_enabled,
+            content_format=ctx.content_format,
+        )
+        if mw:
+            item.warnings = list(getattr(item, "warnings", [])) + mw
+        return clip_out
+
     if media_type == "title_card" and not ctx.options.title_card_enabled:
         from moviepy import ColorClip
         return ColorClip(size=size, color=(20, 22, 28), duration=dur)
@@ -216,6 +231,7 @@ def _clip_for_timeline_item(
         if not png_path.is_file() or png_path.stat().st_size < 100:
             _ensure_card_png(ctx, png_path, item, scene_index=scene_index)
         clip = ImageClip(str(png_path)).with_duration(dur).resized(size)
+        clip = _maybe_motion(clip)
         return _overlay_captions_on_clip(clip, item, ctx, size)
 
     if media_type in ("placeholder",) or not item.source_path:
@@ -226,6 +242,7 @@ def _clip_for_timeline_item(
         if not png_path.is_file():
             _ensure_card_png(ctx, png_path, item, scene_index=scene_index)
         clip = ImageClip(str(png_path)).with_duration(dur).resized(size)
+        clip = _maybe_motion(clip)
         return _overlay_captions_on_clip(clip, item, ctx, size)
 
     src = _resolve_path(item.source_path, repo_root)
@@ -233,6 +250,7 @@ def _clip_for_timeline_item(
         png_path = cache_dir / f"{item.scene_id}_missing.png"
         _ensure_card_png(ctx, png_path, item, scene_index=scene_index)
         clip = ImageClip(str(png_path)).with_duration(dur).resized(size)
+        clip = _maybe_motion(clip)
         return _overlay_captions_on_clip(clip, item, ctx, size)
 
     if media_type == "video":
@@ -256,6 +274,7 @@ def _clip_for_timeline_item(
 
     if media_type == "image":
         clip = ImageClip(str(src)).with_duration(dur).resized(size)
+        clip = _maybe_motion(clip)
         return _overlay_captions_on_clip(clip, item, ctx, size)
 
     return ColorClip(size=size, color=(40, 40, 50), duration=dur)
@@ -275,6 +294,41 @@ def _apply_simple_transitions(segments: list[Any], options: RenderOptions) -> li
         except Exception:  # noqa: BLE001
             pass
         out.append(seg)
+    return out
+
+
+def _apply_transitions_from_plan(segments: list[Any], ctx: RenderContext) -> list[Any]:
+    plan = ctx.transition_plan
+    if not plan or not getattr(plan, "transitions", None) or len(segments) < 2:
+        return _apply_simple_transitions(segments, ctx.options)
+
+    transitions = plan.transitions
+    out: list[Any] = []
+    tr_idx = 0
+    for i, seg in enumerate(segments):
+        tr = transitions[tr_idx] if tr_idx < len(transitions) else None
+        ttype = tr.transition_type if tr else "cut"
+        td = float(tr.duration if tr and tr.duration > 0 else ctx.options.transition_duration)
+        try:
+            if i > 0 and ttype != "cut" and td > 0:
+                if ttype in ("crossfade", "slide_soft", "quick_zoom", "card_punch") and hasattr(seg, "crossfadein"):
+                    seg = seg.crossfadein(td)
+                    if tr and ttype in ("quick_zoom", "slide_soft", "card_punch"):
+                        tr.warnings = list(tr.warnings) + ["used crossfade fallback"]
+                elif ttype == "fade_to_black":
+                    if hasattr(seg, "crossfadein"):
+                        seg = seg.crossfadein(td)
+                elif tr:
+                    tr.warnings = list(tr.warnings) + [f"transition {ttype} fell back to cut"]
+            if i < len(segments) - 1 and tr and ttype in ("crossfade", "fade_to_black", "slide_soft"):
+                if hasattr(seg, "crossfadeout"):
+                    seg = seg.crossfadeout(td)
+        except Exception as exc:  # noqa: BLE001
+            if tr:
+                tr.warnings = list(tr.warnings) + [str(exc)]
+        out.append(seg)
+        if i < len(segments) - 1:
+            tr_idx += 1
     return out
 
 
@@ -333,7 +387,10 @@ def render_with_moviepy_if_available(
     if not segments:
         return False, ["no segments to render"]
 
-    segments = _apply_simple_transitions(segments, ctx.options)
+    if ctx.transition_plan:
+        segments = _apply_transitions_from_plan(segments, ctx)
+    else:
+        segments = _apply_simple_transitions(segments, ctx.options)
 
     try:
         video = concatenate_videoclips(segments, method="compose")
@@ -391,6 +448,7 @@ def _build_render_notes(
     reason: str = "",
     trim_notes: list[str] | None = None,
     audio_notes: list[str] | None = None,
+    transition_notes: list[str] | None = None,
 ) -> str:
     preset = ctx.preset
     opts = ctx.options
@@ -446,6 +504,13 @@ def _build_render_notes(
             lines.append(f"- {n}")
     else:
         lines.append("- No audio mix applied")
+    lines.extend(["", "## Transitions & pacing", ""])
+    if transition_notes:
+        for n in transition_notes:
+            lines.append(f"- {n}")
+        lines.append("- See `transition_plan.json` and `beat_timing.json`")
+    else:
+        lines.append("- Default/simple transitions")
     lines.extend([
         "",
         "## Export quality",
@@ -466,6 +531,8 @@ def _build_render_notes(
         "- `audio_manifest.json`",
         "- `audio_mix_plan.json`",
         "- `mixed_audio.mp3`",
+        "- `transition_plan.json`",
+        "- `beat_timing.json`",
         "- `export_manifest.json`",
     ])
     if output_name:
@@ -528,8 +595,15 @@ def render_video_timeline(
     content_format: str = "",
     trim_notes: list[str] | None = None,
     audio_notes: list[str] | None = None,
+    transition_preset: str = "auto",
+    beat_sync_enabled: bool = True,
+    motion_effects_enabled: bool = True,
+    transition_duration: float | None = None,
+    transition_plan: Any = None,
+    transition_notes: list[str] | None = None,
 ) -> RenderResult:
     """Render draft MP4 or write partial package."""
+    td = transition_duration if transition_duration is not None else 0.12
     options = RenderOptions(
         brand_preset=brand_preset,
         captions_enabled=captions_enabled,
@@ -538,6 +612,10 @@ def render_video_timeline(
         scene_cards_enabled=scene_cards_enabled,
         target_resolution=target_resolution,
         fps=fps,
+        transition_preset=transition_preset,
+        motion_effects_enabled=motion_effects_enabled,
+        transition_duration=td,
+        simple_transitions=transition_preset not in ("simple_cuts",),
     )
     preset = get_brand_preset(brand_preset)
     timeline.fps = fps
@@ -552,6 +630,7 @@ def render_video_timeline(
         primary_hook=primary_hook,
         disclosure_note=disclosure_note,
         content_format=content_format,
+        transition_plan=transition_plan,
     )
 
     timeline_path = run_dir / "timeline.json"
@@ -584,7 +663,10 @@ def render_video_timeline(
         notes_path.write_text(
             _build_render_notes(
                 timeline, ctx, status="complete", renderer="moviepy",
-                output_name="draft_video.mp4", trim_notes=trim_notes, audio_notes=audio_notes,
+                output_name="draft_video.mp4",
+                trim_notes=trim_notes,
+                audio_notes=audio_notes,
+                transition_notes=transition_notes,
             ),
             encoding="utf-8",
         )

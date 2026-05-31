@@ -119,6 +119,15 @@ def read_export_status_safe(run_dir: Path, record_export_dir: str) -> dict[str, 
     return {"export_dir": export_dir, "has_export": has_export}
 
 
+def read_transition_status_safe(run_dir: Path) -> dict[str, str]:
+    tp = _safe_json(run_dir / "transition_plan.json")
+    bt = _safe_json(run_dir / "beat_timing.json")
+    return {
+        "transition_preset": tp.get("preset_name", ""),
+        "beat_sync_status": bt.get("status", "") if bt else "",
+    }
+
+
 def _suggested_commands(
     card: DashboardRunCard,
 ) -> list[str]:
@@ -130,9 +139,14 @@ def _suggested_commands(
     if card.review_html_path:
         cmds.append(f"python -m genesis.review.review_cli show {jid}")
     if card.draft_video_path:
+        tp = card.transition_preset or "auto"
+        if brand == "bold_viral" and tp == "auto":
+            tp = "product_snap"
+        elif brand == "wellness_soft" and tp == "auto":
+            tp = "wellness_flow"
         cmds.append(
             f"python -m genesis.creator.creator_cli rerender {jid} "
-            f"--platform {plat} --brand {brand}"
+            f"--platform {plat} --brand {brand} --transition-preset {tp}"
         )
     if card.draft_video_path and not card.has_export:
         cmds.append(
@@ -177,6 +191,7 @@ def build_run_card(
         thumb_rel = _rel_link(dashboard_dir, thumb_abs)
 
     has_audio = (run_dir / "mixed_audio.mp3").is_file()
+    trans = read_transition_status_safe(run_dir)
 
     warnings = _scrub_list(list(record.warnings))
     if media["placeholders"]:
@@ -202,6 +217,8 @@ def build_run_card(
         placeholder_scene_count=media["placeholders"],
         has_audio_mix=has_audio,
         has_export=export_info["has_export"],
+        transition_preset=trans.get("transition_preset", ""),
+        beat_sync_status=trans.get("beat_sync_status", ""),
         warnings=warnings[:8],
         notes=[],
     )
@@ -280,6 +297,11 @@ def write_dashboard_html(
             if card.total_scene_count
             else "no manifest"
         )
+        trans_line = ""
+        if card.transition_preset:
+            trans_line = f'<span class="badge">{_e(card.transition_preset)}</span> '
+        if card.beat_sync_status:
+            trans_line += f'<span class="badge">beats:{_e(card.beat_sync_status)}</span>'
         ph_line = (
             f'<span class="badge warn">{card.placeholder_scene_count} placeholder(s)</span>'
             if card.placeholder_scene_count
@@ -313,6 +335,7 @@ def write_dashboard_html(
       {ph_line}
     </div>
     <p class="detail">Media: {media_line} · Audio mix: {"yes" if card.has_audio_mix else "no"}</p>
+    <p class="detail">Transitions: {trans_line or "—"}</p>
     <p class="links">{video_link} · {review_link} · Export: {export_link}</p>
     <div class="warns">{warn_badges}</div>
     <details><summary>Commands</summary><pre class="cmds">{cmds}</pre></details>
